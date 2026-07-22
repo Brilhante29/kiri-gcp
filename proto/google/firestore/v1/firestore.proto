@@ -1,0 +1,176 @@
+syntax = "proto3";
+
+package google.firestore.v1;
+
+option go_package = "github.com/kumo-gcp/kumo-gcp/proto/google/firestore/v1;firestorepb";
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+// Document represents a Firestore document.
+message Document {
+  string name = 1;
+  map<string, Value> fields = 2;
+  google.protobuf.Timestamp create_time = 3;
+  google.protobuf.Timestamp update_time = 4;
+}
+
+// Value represents a Firestore value.
+message Value {
+  oneof value_type {
+    NullValue null_value = 11;
+    bool boolean_value = 1;
+    int64 integer_value = 2;
+    double double_value = 3;
+    Timestamp timestamp_value = 4;
+    string string_value = 5;
+    bytes bytes_value = 6;
+    string reference_value = 7;
+    MapValue map_value = 8;
+    ArrayValue array_value = 9;
+    LatLng geo_point_value = 10;
+  }
+}
+
+message MapValue {
+  map<string, Value> fields = 1;
+}
+
+message ArrayValue {
+  repeated Value values = 1;
+}
+
+message Timestamp {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}
+
+message LatLng {
+  double latitude = 1;
+  double longitude = 2;
+}
+
+enum NullValue {
+  NULL_VALUE = 0;
+}
+
+message GetDocumentRequest {
+  string name = 1;
+  bytes transaction = 2;
+}
+
+message ListDocumentsRequest {
+  string parent = 1;
+  string collection_id = 2;
+  int32 page_size = 3;
+  bytes transaction = 4;
+  string order_by = 5;
+  bool show_missing = 6;
+}
+
+message ListDocumentsResponse {
+  repeated Document documents = 1;
+  string next_page_token = 2;
+}
+
+message CreateDocumentRequest {
+  string parent = 1;
+  string collection_id = 2;
+  string document_id = 3;
+  Document document = 4;
+}
+
+message UpdateDocumentRequest {
+  Document document = 1;
+}
+
+message DeleteDocumentRequest {
+  string name = 1;
+}
+
+message BeginTransactionRequest {
+  string database = 1;
+}
+
+message BeginTransactionResponse {
+  bytes transaction = 1;
+}
+
+message CommitRequest {
+  string database = 1;
+  bytes transaction = 2;
+  repeated Write writes = 3;
+}
+
+message CommitResponse {
+  repeated WriteResult write_results = 1;
+  google.protobuf.Timestamp commit_time = 2;
+}
+
+message Write {
+  Update update = 1;
+  Delete delete = 2;
+}
+
+message Update {
+  Document document = 1;
+}
+
+message Delete {
+  string name = 1;
+}
+
+message WriteResult {
+  google.protobuf.Timestamp update_time = 1;
+  repeated Value transform_results = 2;
+}
+
+message RollbackRequest {
+  string database = 1;
+  bytes transaction = 2;
+}
+
+message RunQueryRequest {
+  string parent = 1;
+  StructuredQuery structured_query = 2;
+  bytes transaction = 3;
+}
+
+message RunQueryResponse {
+  repeated QueryResultBatch batches = 1;
+}
+
+message QueryResultBatch {
+  repeated Document documents = 1;
+}
+
+message StructuredQuery {
+  repeated FieldFilter where = 1;
+  repeated Order order_by = 2;
+  int32 limit = 3;
+}
+
+message FieldFilter {
+  string field = 1;
+  string op = 2;
+  Value value = 3;
+}
+
+message Order {
+  string field = 1;
+  string direction = 2;
+}
+
+service Firestore {
+  rpc GetDocument(GetDocumentRequest) returns (Document);
+  rpc ListDocuments(ListDocumentsRequest) returns (ListDocumentsResponse);
+  rpc CreateDocument(CreateDocumentRequest) returns (Document);
+  rpc UpdateDocument(UpdateDocumentRequest) returns (Document);
+  rpc DeleteDocument(DeleteDocumentRequest) returns (Empty);
+  rpc BeginTransaction(BeginTransactionRequest) returns (BeginTransactionResponse);
+  rpc Commit(CommitRequest) returns (CommitResponse);
+  rpc Rollback(RollbackRequest) returns (Empty);
+  rpc RunQuery(RunQueryRequest) returns (RunQueryResponse);
+}
+
+message Empty {}
