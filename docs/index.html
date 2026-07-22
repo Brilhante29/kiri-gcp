@@ -3,200 +3,182 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>kiri — Google Cloud, minus the cloud</title>
-<meta name="description" content="kiri is a single-binary Google Cloud Platform emulator. 108 services on one local endpoint — build, test, and price a whole GCP architecture without a real project.">
+<title>kiri · Google Cloud, minus the cloud</title>
+<meta name="description" content="kiri is a single-binary Google Cloud emulator. 108 services on one local endpoint. Works with the Go, Python, Node, and Java SDKs, gcloud, Terraform, and plain REST.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#FBFCFD; --ink:#0D141C; --fog:#67727F; --line:#E4E9EE;
-    --panel:#FFFFFF; --accent:#0C8C86; --accent-soft:#E3F3F1;
-    --term-bg:#0C1116; --term-ink:#C6D0DA; --term-dim:#6A7684; --term-accent:#3ED8D0;
-    --maxw:1080px;
+    --bg:#FBFCFD; --ink:#0D141C; --fog:#67727F; --line:#E6EBEF;
+    --panel:#FFFFFF; --accent:#0C8C86; --accent-weak:#E6F4F2;
+    --term-bg:#0C1116; --term-ink:#C6D0DA; --term-dim:#697585; --term-accent:#3ED8D0;
+    --sel:#0C8C86;
+    --maxw:1120px;
   }
   @media (prefers-color-scheme:dark){
-    :root{
-      --bg:#0A0E13; --ink:#E9EEF3; --fog:#8A97A6; --line:#1B222B;
-      --panel:#0F141B; --accent:#3ED8D0; --accent-soft:#12211F;
-    }
+    :root{ --bg:#0A0E13; --ink:#E9EEF3; --fog:#8A97A6; --line:#1B222B;
+           --panel:#0F141B; --accent:#3ED8D0; --accent-weak:#12211F; --sel:#3ED8D0; }
   }
-  :root[data-theme="dark"]{
-    --bg:#0A0E13; --ink:#E9EEF3; --fog:#8A97A6; --line:#1B222B;
-    --panel:#0F141B; --accent:#3ED8D0; --accent-soft:#12211F;
-  }
-  :root[data-theme="light"]{
-    --bg:#FBFCFD; --ink:#0D141C; --fog:#67727F; --line:#E4E9EE;
-    --panel:#FFFFFF; --accent:#0C8C86; --accent-soft:#E3F3F1;
-  }
+  :root[data-theme="dark"]{ --bg:#0A0E13; --ink:#E9EEF3; --fog:#8A97A6; --line:#1B222B;
+           --panel:#0F141B; --accent:#3ED8D0; --accent-weak:#12211F; --sel:#3ED8D0; }
+  :root[data-theme="light"]{ --bg:#FBFCFD; --ink:#0D141C; --fog:#67727F; --line:#E6EBEF;
+           --panel:#FFFFFF; --accent:#0C8C86; --accent-weak:#E6F4F2; --sel:#0C8C86; }
 
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{
-    background:var(--bg); color:var(--ink);
+  body{background:var(--bg);color:var(--ink);
     font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
-    font-size:17px; line-height:1.6; -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
-  }
+    font-size:16.5px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  ::selection{background:var(--sel);color:#fff}
   .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
   a{color:inherit;text-decoration:none}
   code,.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
 
-  /* ---- nav ---- */
-  header{
-    position:sticky;top:0;z-index:50;
-    background:color-mix(in srgb,var(--bg) 82%,transparent);
-    backdrop-filter:blur(12px);
-    border-bottom:1px solid var(--line);
-  }
-  .nav{display:flex;align-items:center;justify-content:space-between;height:60px}
-  .brand{display:flex;align-items:center;gap:9px;font-weight:600;letter-spacing:-.02em}
-  .brand .glyph{font-size:19px;color:var(--accent);line-height:1}
-  .brand .name{font-family:"IBM Plex Mono";font-size:18px}
-  .nav-links{display:flex;gap:26px;align-items:center;font-size:14.5px;color:var(--fog)}
+  /* nav */
+  header{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--bg) 84%,transparent);
+    backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;gap:20px;height:58px}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:600}
+  .brand .glyph{color:var(--accent);font-size:18px}
+  .brand .name{font-family:"IBM Plex Mono";font-size:17px;letter-spacing:-.01em}
+  .nav-links{display:flex;gap:22px;align-items:center;font-size:14px;color:var(--fog);margin-left:auto}
   .nav-links a:hover{color:var(--ink)}
   .nav-links .gh{color:var(--ink);font-weight:500}
-  @media(max-width:640px){.nav-links a:not(.gh){display:none}}
+  @media(max-width:680px){.nav-links a:not(.gh){display:none}}
+  .theme-btn{background:transparent;border:1px solid var(--line);color:var(--fog);border-radius:7px;
+    padding:5px 10px;font-family:"IBM Plex Mono";font-size:12px;cursor:pointer}
+  .theme-btn:hover{color:var(--ink);border-color:var(--fog)}
 
-  /* ---- hero ---- */
-  .hero{position:relative;padding:110px 0 96px;overflow:hidden}
-  .hero-fog{
-    position:absolute;inset:-40% 0 auto 0;height:520px;z-index:0;pointer-events:none;
-    background:
-      radial-gradient(60% 90% at 30% 0%, color-mix(in srgb,var(--accent) 12%,transparent), transparent 70%),
-      radial-gradient(50% 80% at 80% 10%, color-mix(in srgb,var(--fog) 16%,transparent), transparent 72%);
-    filter:blur(10px);
-    animation:drift 26s ease-in-out infinite alternate;
-  }
-  @keyframes drift{from{transform:translate3d(-3%,0,0) scale(1.02)}to{transform:translate3d(4%,2%,0) scale(1.08)}}
-  .kanji{
-    position:absolute;right:-2%;top:-8%;font-size:min(38vw,440px);line-height:1;
-    color:var(--ink);opacity:.028;z-index:0;font-weight:700;pointer-events:none;user-select:none;
-  }
-  .hero-in{position:relative;z-index:1;max-width:720px}
-  .eyebrow{
-    font-family:"IBM Plex Mono";font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;
-    color:var(--accent);margin-bottom:22px;display:flex;align-items:center;gap:10px;
-  }
-  .eyebrow::before{content:"";width:26px;height:1px;background:var(--accent);display:inline-block}
-  h1{
-    font-size:clamp(38px,6.2vw,68px);line-height:1.02;letter-spacing:-.035em;font-weight:700;
-    margin-bottom:22px;
-  }
+  /* hero */
+  .hero{position:relative;padding:104px 0 72px;overflow:hidden}
+  .hero-fog{position:absolute;inset:-45% 0 auto 0;height:500px;z-index:0;pointer-events:none;
+    background:radial-gradient(55% 90% at 28% 0%, color-mix(in srgb,var(--accent) 13%,transparent), transparent 70%),
+               radial-gradient(48% 78% at 82% 8%, color-mix(in srgb,var(--fog) 15%,transparent), transparent 72%);
+    filter:blur(12px);animation:drift 30s ease-in-out infinite alternate}
+  @keyframes drift{from{transform:translate3d(-2%,0,0) scale(1.03)}to{transform:translate3d(3%,2%,0) scale(1.09)}}
+  .kanji{position:absolute;right:-1%;top:-10%;font-size:min(36vw,420px);line-height:1;color:var(--ink);
+    opacity:.03;z-index:0;font-weight:700;pointer-events:none;user-select:none}
+  .hero-in{position:relative;z-index:1;max-width:740px}
+  .eyebrow{font-family:"IBM Plex Mono";font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--accent);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:24px;height:1px;background:var(--accent)}
+  h1{font-size:clamp(38px,6vw,66px);line-height:1.03;letter-spacing:-.035em;font-weight:700;margin-bottom:20px}
   h1 .thin{color:var(--fog);font-weight:400}
-  .lead{font-size:clamp(17px,2.2vw,20px);color:var(--fog);max-width:560px;margin-bottom:36px}
+  .lead{font-size:clamp(17px,2.1vw,20px);color:var(--fog);max-width:580px;margin-bottom:34px}
   .lead b{color:var(--ink);font-weight:600}
+  .hero-meta{display:flex;gap:26px;margin-top:24px;font-size:13px;color:var(--fog);flex-wrap:wrap}
+  .hero-meta b{color:var(--ink);font-weight:600;font-family:"IBM Plex Mono"}
 
-  /* command block */
-  .cmd{
-    display:flex;align-items:center;gap:14px;
-    background:var(--term-bg);border-radius:11px;padding:16px 18px;
-    font-family:"IBM Plex Mono";font-size:14.5px;color:var(--term-ink);
-    max-width:560px;box-shadow:0 1px 0 var(--line),0 18px 40px -24px rgba(0,0,0,.5);
-  }
-  .cmd .prompt{color:var(--term-accent);user-select:none}
-  .cmd code{flex:1;white-space:nowrap;overflow-x:auto;scrollbar-width:none}
-  .cmd code::-webkit-scrollbar{display:none}
-  .copy{
-    border:1px solid #2A333D;background:transparent;color:var(--term-dim);
-    border-radius:6px;padding:5px 9px;font-family:inherit;font-size:12px;cursor:pointer;transition:.15s;
-  }
+  /* code block (shared) */
+  .code{position:relative;background:var(--term-bg);border-radius:11px;overflow:hidden}
+  .code pre{margin:0;padding:15px 17px;font-family:"IBM Plex Mono";font-size:13.5px;line-height:1.7;
+    color:var(--term-ink);overflow-x:auto}
+  .code.inline-cmd{display:flex;align-items:center;gap:12px;padding:15px 17px;max-width:560px;
+    box-shadow:0 18px 40px -26px rgba(0,0,0,.5)}
+  .code.inline-cmd pre{padding:0;flex:1;white-space:nowrap;scrollbar-width:none}
+  .code.inline-cmd pre::-webkit-scrollbar{display:none}
+  .prompt{color:var(--term-accent);user-select:none;font-family:"IBM Plex Mono";font-size:13.5px}
+  .copy{position:absolute;top:9px;right:9px;border:1px solid #262f39;background:color-mix(in srgb,var(--term-bg) 70%,transparent);
+    color:var(--term-dim);border-radius:6px;padding:4px 9px;font-family:"IBM Plex Mono";font-size:11.5px;cursor:pointer;transition:.15s}
   .copy:hover{color:var(--term-accent);border-color:var(--term-accent)}
-  .hero-meta{display:flex;gap:28px;margin-top:26px;font-size:13.5px;color:var(--fog);flex-wrap:wrap}
-  .hero-meta b{color:var(--ink);font-weight:600}
+  .inline-cmd .copy{position:static;border-color:#262f39}
+  .c-dim{color:var(--term-dim)}
+  .c-str{color:var(--term-accent)}
+  .c-key{color:#9DB4E8}
+  .c-fn{color:#E4C07A}
 
-  /* ---- section frame ---- */
-  section.block{padding-top:80px;padding-bottom:80px;border-top:1px solid var(--line)}
-  .sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:40px}
-  .sec-num{font-family:"IBM Plex Mono";font-size:13px;color:var(--accent)}
-  .sec-title{font-size:clamp(24px,3.4vw,32px);letter-spacing:-.025em;font-weight:600}
-  .sec-sub{color:var(--fog);font-size:15px;margin-left:auto;max-width:340px;text-align:right}
-  @media(max-width:640px){.sec-sub{display:none}}
+  /* section frame */
+  section.block{padding-top:76px;padding-bottom:76px;border-top:1px solid var(--line)}
+  .sec-head{display:flex;align-items:baseline;gap:13px;margin-bottom:34px;flex-wrap:wrap}
+  .sec-num{font-family:"IBM Plex Mono";font-size:12.5px;color:var(--accent)}
+  .sec-title{font-size:clamp(23px,3.2vw,30px);letter-spacing:-.025em;font-weight:600}
+  .sec-sub{color:var(--fog);font-size:14.5px;margin-left:auto;max-width:330px;text-align:right}
+  @media(max-width:680px){.sec-sub{display:none}}
 
-  /* problem */
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  /* problem cards */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   @media(max-width:720px){.cols{grid-template-columns:1fr}}
-  .card{
-    background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:26px 24px;
-  }
-  .card.bad .tag{color:#C4614E}
-  .card.good{border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:24px 22px}
+  .card.good{border-color:color-mix(in srgb,var(--accent) 42%,var(--line));background:color-mix(in srgb,var(--accent-weak) 55%,var(--panel))}
+  .card .tag{font-family:"IBM Plex Mono";font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;
+    margin-bottom:12px;color:var(--fog)}
   .card.good .tag{color:var(--accent)}
-  .card .tag{font-family:"IBM Plex Mono";font-size:12px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:14px}
-  .card h3{font-size:18px;font-weight:600;margin-bottom:10px;letter-spacing:-.01em}
-  .card p{font-size:15px;color:var(--fog)}
+  .card h3{font-size:17px;font-weight:600;margin-bottom:9px;letter-spacing:-.01em}
+  .card p{font-size:14.5px;color:var(--fog)}
   .card.good p{color:var(--ink)}
 
-  /* quickstart */
-  .steps{display:grid;gap:2px;background:var(--line);border:1px solid var(--line);border-radius:14px;overflow:hidden}
-  .step{background:var(--panel);padding:24px 26px;display:grid;grid-template-columns:44px 1fr;gap:20px;align-items:start}
-  .step .n{font-family:"IBM Plex Mono";font-size:14px;color:var(--accent);padding-top:2px}
-  .step h4{font-size:16px;font-weight:600;margin-bottom:6px}
-  .step p{font-size:14.5px;color:var(--fog);margin-bottom:14px}
-  pre{
-    background:var(--term-bg);color:var(--term-ink);border-radius:9px;padding:14px 16px;
-    font-family:"IBM Plex Mono";font-size:13.5px;line-height:1.65;overflow-x:auto;
-  }
-  pre .c{color:var(--term-dim)}
-  pre .a{color:var(--term-accent)}
-  pre .k{color:#9DB4E8}
+  /* steps */
+  .steps{display:grid;gap:2px;background:var(--line);border:1px solid var(--line);border-radius:13px;overflow:hidden}
+  .step{background:var(--bg);padding:22px 24px;display:grid;grid-template-columns:40px 1fr;gap:18px;align-items:start}
+  .step .n{font-family:"IBM Plex Mono";font-size:13.5px;color:var(--accent);padding-top:3px}
+  .step h4{font-size:16px;font-weight:600;margin-bottom:5px}
+  .step p{font-size:14px;color:var(--fog);margin-bottom:14px}
+
+  /* tabs */
+  .tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}
+  .tab{border:1px solid var(--line);background:var(--panel);color:var(--fog);border-radius:8px;
+    padding:6px 13px;font-family:"IBM Plex Mono";font-size:12.5px;cursor:pointer;transition:.13s}
+  .tab:hover{color:var(--ink)}
+  .tab[aria-selected="true"]{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 50%,var(--line));
+    background:var(--accent-weak)}
+  .panel{display:none}
+  .panel.on{display:block}
+  .panel .note{font-size:13px;color:var(--fog);margin-top:10px}
+  .panel .note code{color:var(--ink);background:var(--accent-weak);padding:1px 6px;border-radius:5px;font-size:12px}
+  .stack>*+*{margin-top:10px}
 
   /* cost signature */
-  .cost{border-top:1px solid var(--line);background:
-    linear-gradient(180deg,transparent, color-mix(in srgb,var(--accent) 4%,transparent));padding:84px 0}
-  .cost-grid{display:grid;grid-template-columns:1fr 1.25fr;gap:44px;align-items:center}
-  @media(max-width:820px){.cost-grid{grid-template-columns:1fr;gap:32px}}
-  .cost-copy h2{font-size:clamp(26px,3.6vw,36px);letter-spacing:-.03em;line-height:1.1;margin-bottom:18px}
-  .cost-copy .badge{
-    display:inline-block;font-family:"IBM Plex Mono";font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;
-    color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);
-    border-radius:100px;padding:5px 12px;margin-bottom:20px;
-  }
-  .cost-copy p{color:var(--fog);font-size:16px;margin-bottom:16px}
+  .cost{border-top:1px solid var(--line);padding:80px 0;
+    background:linear-gradient(180deg,transparent,color-mix(in srgb,var(--accent) 4%,transparent))}
+  .cost-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:42px;align-items:center}
+  @media(max-width:820px){.cost-grid{grid-template-columns:1fr;gap:30px}}
+  .cost-copy .badge{display:inline-block;font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);
+    border-radius:100px;padding:5px 12px;margin-bottom:18px}
+  .cost-copy h2{font-size:clamp(25px,3.4vw,34px);letter-spacing:-.03em;line-height:1.12;margin-bottom:16px}
+  .cost-copy p{color:var(--fog);font-size:15.5px;margin-bottom:14px}
   .cost-copy p b{color:var(--ink);font-weight:600}
-  .term{
-    background:var(--term-bg);border-radius:14px;overflow:hidden;
-    box-shadow:0 30px 60px -30px rgba(0,0,0,.55);border:1px solid #1A2029;
-  }
-  .term-bar{display:flex;align-items:center;gap:7px;padding:12px 15px;border-bottom:1px solid #1A2029}
-  .term-bar i{width:11px;height:11px;border-radius:50%;background:#2A333D;display:block}
-  .term-bar span{margin-left:8px;font-family:"IBM Plex Mono";font-size:12px;color:var(--term-dim)}
-  .term-body{padding:20px 20px 24px;font-family:"IBM Plex Mono";font-size:13px;line-height:1.85;color:var(--term-ink)}
-  .term-body .dim{color:var(--term-dim)}
-  .term-body .ok{color:var(--term-accent)}
-  .term-body .rule{color:#2A333D}
-  .term-body .total{color:#fff;font-weight:600}
-  .term-body .big{color:var(--term-accent);font-weight:600;font-size:15px}
-  .budget{margin-top:16px}
-  .budget-track{height:8px;border-radius:100px;background:#1A2029;overflow:hidden;margin:8px 0 6px}
-  .budget-fill{height:100%;width:34.7%;background:linear-gradient(90deg,var(--term-accent),#7FE9E3);border-radius:100px}
-  .budget-label{display:flex;justify-content:space-between;font-size:11.5px;color:var(--term-dim)}
+  .term{background:var(--term-bg);border-radius:13px;overflow:hidden;border:1px solid #171d25;
+    box-shadow:0 30px 60px -32px rgba(0,0,0,.55)}
+  .term-bar{display:flex;align-items:center;gap:7px;padding:11px 14px;border-bottom:1px solid #171d25}
+  .term-bar i{width:11px;height:11px;border-radius:50%;background:#283039}
+  .term-bar span{margin-left:8px;font-family:"IBM Plex Mono";font-size:11.5px;color:var(--term-dim)}
+  .term-body{padding:18px 18px 22px;font-family:"IBM Plex Mono";font-size:12.5px;line-height:1.9;color:var(--term-ink)}
+  .term-body .dim{color:var(--term-dim)} .term-body .ok{color:var(--term-accent)}
+  .term-body .rule{color:#283039} .term-body .total{color:#fff;font-weight:600}
+  .term-body .big{color:var(--term-accent);font-weight:600;font-size:14.5px}
+  .budget-track{height:7px;border-radius:100px;background:#1a2029;overflow:hidden;margin:12px 0 6px}
+  .budget-fill{height:100%;width:34.7%;background:linear-gradient(90deg,var(--term-accent),#7FE9E3)}
+  .budget-label{display:flex;justify-content:space-between;font-size:11px;color:var(--term-dim)}
 
   /* services */
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
-  .svc{
-    background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:16px 18px;
-    transition:.15s;
-  }
+  .svc-tools{display:flex;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+  .search{flex:1;min-width:200px;max-width:340px;display:flex;align-items:center;gap:9px;
+    background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:9px 13px}
+  .search input{border:0;background:transparent;color:var(--ink);font-family:"IBM Plex Sans";font-size:14px;width:100%;outline:none}
+  .search svg{flex:none;color:var(--fog)}
+  .search-hint{font-family:"IBM Plex Mono";font-size:12px;color:var(--fog)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:11px}
+  .svc{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:15px 17px;transition:.13s}
   .svc:hover{border-color:color-mix(in srgb,var(--accent) 40%,var(--line));transform:translateY(-2px)}
-  .svc .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
-  .svc .cat{font-size:14.5px;font-weight:600;letter-spacing:-.01em}
-  .svc .cnt{font-family:"IBM Plex Mono";font-size:13px;color:var(--accent)}
-  .svc .ex{font-size:12.5px;color:var(--fog);line-height:1.5}
-  .grid-total{text-align:center;margin-top:28px;font-size:14px;color:var(--fog)}
-  .grid-total b{color:var(--ink);font-family:"IBM Plex Mono"}
+  .svc.hide{display:none}
+  .svc .top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+  .svc .cat{font-size:14px;font-weight:600;letter-spacing:-.01em}
+  .svc .cnt{font-family:"IBM Plex Mono";font-size:12.5px;color:var(--accent)}
+  .svc .ex{font-size:12px;color:var(--fog);line-height:1.55}
+
+  /* config */
+  .cfg{width:100%;border-collapse:collapse;font-size:14px}
+  .cfg th,.cfg td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line)}
+  .cfg th{font-family:"IBM Plex Mono";font-size:12px;color:var(--fog);font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+  .cfg td code{font-family:"IBM Plex Mono";font-size:13px;color:var(--accent)}
+  .cfg tr:last-child td{border-bottom:0}
 
   /* footer */
-  footer{border-top:1px solid var(--line);padding:48px 0 60px;color:var(--fog);font-size:14px}
-  .foot{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
-  .foot .brand{color:var(--ink)}
-  .foot a{color:var(--fog)}
-  .foot a:hover{color:var(--accent)}
-  .theme-btn{
-    background:transparent;border:1px solid var(--line);color:var(--fog);border-radius:7px;
-    padding:6px 11px;font-family:"IBM Plex Mono";font-size:12px;cursor:pointer;transition:.15s;
-  }
-  .theme-btn:hover{color:var(--ink);border-color:var(--fog)}
+  footer{border-top:1px solid var(--line);padding:44px 0 56px;color:var(--fog);font-size:14px}
+  .foot{display:flex;justify-content:space-between;align-items:center;gap:18px;flex-wrap:wrap}
+  .foot .brand{color:var(--ink)} .foot a{color:var(--fog)} .foot a:hover{color:var(--accent)}
 
   :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
   @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto}}
@@ -206,221 +188,343 @@
 
 <header>
   <div class="wrap nav">
-    <a class="brand" href="#top" aria-label="kiri home">
-      <span class="glyph">霧</span><span class="name">kiri</span>
-    </a>
+    <a class="brand" href="#top"><span class="glyph">霧</span><span class="name">kiri</span></a>
     <nav class="nav-links">
-      <a href="#quickstart">Quickstart</a>
+      <a href="#start">Quickstart</a>
+      <a href="#clients">Clients</a>
       <a href="#cost">Cost</a>
       <a href="#services">Services</a>
+      <a href="#config">Config</a>
       <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">theme</button>
-      <a class="gh" href="https://github.com/kiri-dev/kiri">GitHub ↗</a>
+      <a class="gh" href="https://github.com/kiri-dev/kiri">GitHub</a>
     </nav>
   </div>
 </header>
 
 <main id="top">
 
-  <!-- HERO -->
   <section class="hero">
     <div class="hero-fog" aria-hidden="true"></div>
     <div class="kanji" aria-hidden="true">霧</div>
     <div class="wrap hero-in">
-      <div class="eyebrow">Local GCP emulator</div>
+      <div class="eyebrow">Local Google Cloud emulator</div>
       <h1>Google Cloud,<br><span class="thin">minus the cloud.</span></h1>
-      <p class="lead">
-        kiri is a single-binary GCP emulator. <b>108 services on one local
-        endpoint</b> — build, test, and <b>price</b> a whole architecture
-        without a real project, a credential, or a bill.
-      </p>
-      <div class="cmd">
+      <p class="lead">One binary emulates <b>108 GCP services</b> on a single local
+        endpoint. Point the Go, Python, Node, or Java SDK at it. Point gcloud,
+        Terraform, or plain REST at it. Build, test, and <b>price</b> a whole
+        architecture with no project, no credentials, no bill.</p>
+      <div class="code inline-cmd">
         <span class="prompt">$</span>
-        <code id="runCmd">docker run -p 4443:4443 -p 8085:8085 kiri</code>
-        <button class="copy" id="copyBtn">copy</button>
+        <pre id="runCmd">docker run -p 4443:4443 -p 8085:8085 kiri</pre>
+        <button class="copy" data-copy="#runCmd">copy</button>
       </div>
       <div class="hero-meta">
-        <span><b>0</b> credentials</span>
+        <span><b>108</b> services</span>
+        <span><b>7</b> ways to connect</span>
         <span><b>0</b> cloud spend</span>
-        <span><b>1</b> binary</span>
-        <span>REST&nbsp;<b>:4443</b> · gRPC&nbsp;<b>:8085</b></span>
+        <span>REST <b>:4443</b> · gRPC <b>:8085</b></span>
       </div>
     </div>
   </section>
 
-  <!-- PROBLEM -->
   <section class="block wrap" id="why">
     <div class="sec-head">
-      <span class="sec-num">01</span>
-      <span class="sec-title">The gap kiri fills</span>
-      <span class="sec-sub">AWS devs got one local endpoint for everything years ago. GCP devs never did.</span>
+      <span class="sec-num">01</span><span class="sec-title">The gap kiri fills</span>
+      <span class="sec-sub">AWS developers got one local endpoint for everything. GCP developers never did.</span>
     </div>
     <div class="cols">
-      <div class="card bad">
-        <div class="tag">Option A — real GCP</div>
-        <h3>Slow, costly, online-only</h3>
-        <p>Every test run needs credentials and a network round-trip, spends real
-        money, pollutes shared projects, and can't run in an air-gapped pipeline.</p>
+      <div class="card">
+        <div class="tag">Real GCP</div>
+        <h3>Slow, costly, online only</h3>
+        <p>Every test run needs credentials and a network round trip, spends real
+        money, pollutes shared projects, and cannot run offline or in CI cheaply.</p>
       </div>
-      <div class="card bad">
-        <div class="tag">Option B — official emulators</div>
+      <div class="card">
+        <div class="tag">Official emulators</div>
         <h3>Five binaries, five services</h3>
         <p>Google ships emulators for Pub/Sub, Firestore, Bigtable, Datastore, and
-        Spanner — separate processes, separate flags, and no way to see cost.</p>
+        Spanner. Separate processes, separate flags, and no view of cost.</p>
       </div>
     </div>
-    <div class="card good" style="margin-top:20px">
+    <div class="card good" style="margin-top:16px">
       <div class="tag">kiri</div>
-      <h3>One process. One endpoint. The whole platform — priced.</h3>
-      <p>Point any Google Cloud client library at <code>localhost</code>. 108
-      services answer locally, share state across REST and gRPC, persist to disk,
-      and carry a real pricing catalog so you can predict what your design costs.</p>
+      <h3>One endpoint. The whole platform. Priced.</h3>
+      <p>108 services answer locally, share state across REST and gRPC, persist to
+      disk, and carry a real pricing catalog. Any Google Cloud client works, because
+      every one of them accepts an endpoint override.</p>
     </div>
   </section>
 
-  <!-- QUICKSTART -->
-  <section class="block wrap" id="quickstart">
+  <section class="block wrap" id="start">
     <div class="sec-head">
-      <span class="sec-num">02</span>
-      <span class="sec-title">Quickstart</span>
-      <span class="sec-sub">Running and talking to your first service in under a minute.</span>
+      <span class="sec-num">02</span><span class="sec-title">Quickstart</span>
+      <span class="sec-sub">Running, and talking to it from your language, in under a minute.</span>
     </div>
     <div class="steps">
       <div class="step">
         <div class="n">01</div>
-        <div>
+        <div style="min-width:0">
           <h4>Start the emulator</h4>
           <p>Build the image from source and run it. REST on 4443, gRPC on 8085.</p>
-<pre><span class="c"># one binary, two ports</span>
+          <div class="code"><button class="copy" data-copy="#s1">copy</button>
+<pre id="s1"><span class="c-dim"># one binary, two ports</span>
 docker build -t kiri -f docker/Dockerfile .
-docker run -p <span class="a">4443</span>:4443 -p <span class="a">8085</span>:8085 kiri</pre>
+docker run -p <span class="c-str">4443</span>:4443 -p <span class="c-str">8085</span>:8085 kiri</pre></div>
         </div>
       </div>
       <div class="step">
         <div class="n">02</div>
-        <div>
-          <h4>Point your SDK at it</h4>
-          <p>Nothing in your app changes but the endpoint. Storage and Pub/Sub honor their standard emulator variables.</p>
-<pre><span class="k">export</span> STORAGE_EMULATOR_HOST=<span class="a">http://localhost:4443</span>
-<span class="k">export</span> PUBSUB_EMULATOR_HOST=<span class="a">localhost:8085</span></pre>
+        <div style="min-width:0">
+          <h4>Confirm it is up</h4>
+          <p>A bare request to the root returns the service count.</p>
+          <div class="code"><button class="copy" data-copy="#s2">copy</button>
+<pre id="s2">curl http://localhost:4443/
+<span class="c-dim">{"emulator":"kiri","status":"ok","services":108,"grpc_port":8085}</span></pre></div>
         </div>
       </div>
       <div class="step">
         <div class="n">03</div>
-        <div>
-          <h4>Use the real client library</h4>
-          <p>The unmodified <code>cloud.google.com/go</code> libraries work as-is — this is the actual code your app already runs.</p>
-<pre>client, _ := storage.NewClient(ctx,
-    option.<span class="k">WithEndpoint</span>(<span class="a">"http://localhost:4443/storage/v1/"</span>),
-    option.<span class="k">WithoutAuthentication</span>(),
-)
-<span class="c">// bucket.Create, obj.NewWriter, sub.Receive … all local</span></pre>
+        <div style="min-width:0">
+          <h4>Connect your client</h4>
+          <p>Pick your tool. Nothing in your app changes but the endpoint. See the
+          <a href="#clients" style="color:var(--accent)">full client guide</a> below.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- COST — signature -->
+  <section class="block wrap" id="clients">
+    <div class="sec-head">
+      <span class="sec-num">03</span><span class="sec-title">Point any tool at kiri</span>
+      <span class="sec-sub">Same emulator, seven front doors. Every Google Cloud client takes a custom endpoint.</span>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Client">
+      <button class="tab" role="tab" data-tab="go" aria-selected="true">Go</button>
+      <button class="tab" role="tab" data-tab="python" aria-selected="false">Python</button>
+      <button class="tab" role="tab" data-tab="node" aria-selected="false">Node.js</button>
+      <button class="tab" role="tab" data-tab="java" aria-selected="false">Java</button>
+      <button class="tab" role="tab" data-tab="gcloud" aria-selected="false">gcloud</button>
+      <button class="tab" role="tab" data-tab="tf" aria-selected="false">Terraform</button>
+      <button class="tab" role="tab" data-tab="curl" aria-selected="false">REST</button>
+    </div>
+
+    <div class="panel on stack" data-panel="go" role="tabpanel">
+      <div class="code"><button class="copy" data-copy="#go1">copy</button>
+<pre id="go1"><span class="c-dim"># Storage and Pub/Sub honor the standard emulator env vars</span>
+<span class="c-key">export</span> STORAGE_EMULATOR_HOST=<span class="c-str">http://localhost:4443</span>
+<span class="c-key">export</span> PUBSUB_EMULATOR_HOST=<span class="c-str">localhost:8085</span></pre></div>
+      <div class="code"><button class="copy" data-copy="#go2">copy</button>
+<pre id="go2">client, _ := storage.<span class="c-fn">NewClient</span>(ctx,
+    option.<span class="c-fn">WithEndpoint</span>(<span class="c-str">"http://localhost:4443/storage/v1/"</span>),
+    option.<span class="c-fn">WithoutAuthentication</span>())</pre></div>
+    </div>
+
+    <div class="panel stack" data-panel="python" role="tabpanel">
+      <div class="code"><button class="copy" data-copy="#py1">copy</button>
+<pre id="py1"><span class="c-key">export</span> STORAGE_EMULATOR_HOST=<span class="c-str">http://localhost:4443</span>
+<span class="c-key">export</span> PUBSUB_EMULATOR_HOST=<span class="c-str">localhost:8085</span></pre></div>
+      <div class="code"><button class="copy" data-copy="#py2">copy</button>
+<pre id="py2"><span class="c-key">from</span> google.cloud <span class="c-key">import</span> storage
+
+client = storage.<span class="c-fn">Client</span>(
+    project=<span class="c-str">"my-project"</span>,
+    client_options={<span class="c-str">"api_endpoint"</span>: <span class="c-str">"http://localhost:4443"</span>})</pre></div>
+    </div>
+
+    <div class="panel stack" data-panel="node" role="tabpanel">
+      <div class="code"><button class="copy" data-copy="#nd1">copy</button>
+<pre id="nd1"><span class="c-key">export</span> PUBSUB_EMULATOR_HOST=<span class="c-str">localhost:8085</span></pre></div>
+      <div class="code"><button class="copy" data-copy="#nd2">copy</button>
+<pre id="nd2"><span class="c-key">const</span> {Storage} = <span class="c-fn">require</span>(<span class="c-str">'@google-cloud/storage'</span>);
+
+<span class="c-key">const</span> storage = <span class="c-key">new</span> <span class="c-fn">Storage</span>({
+  projectId: <span class="c-str">'my-project'</span>,
+  apiEndpoint: <span class="c-str">'http://localhost:4443'</span>,
+});</pre></div>
+    </div>
+
+    <div class="panel stack" data-panel="java" role="tabpanel">
+      <div class="code"><button class="copy" data-copy="#jv1">copy</button>
+<pre id="jv1">Storage storage = StorageOptions.<span class="c-fn">newBuilder</span>()
+    .<span class="c-fn">setHost</span>(<span class="c-str">"http://localhost:4443"</span>)
+    .<span class="c-fn">setProjectId</span>(<span class="c-str">"my-project"</span>)
+    .<span class="c-fn">build</span>()
+    .<span class="c-fn">getService</span>();</pre></div>
+      <p class="note">Pub/Sub reads <code>PUBSUB_EMULATOR_HOST</code> the same as every other language.</p>
+    </div>
+
+    <div class="panel stack" data-panel="gcloud" role="tabpanel">
+      <div class="code"><button class="copy" data-copy="#gc1">copy</button>
+<pre id="gc1"><span class="c-dim"># skip auth, then override the endpoint per service</span>
+gcloud config <span class="c-fn">set</span> auth/disable_credentials <span class="c-str">true</span>
+gcloud config <span class="c-fn">set</span> api_endpoint_overrides/storage <span class="c-str">http://localhost:4443/storage/v1/</span>
+
+gcloud storage buckets list</pre></div>
+    </div>
+
+    <div class="panel stack" data-panel="tf" role="tabpanel">
+      <div class="code"><button class="copy" data-copy="#tf1">copy</button>
+<pre id="tf1"><span class="c-key">provider</span> <span class="c-str">"google"</span> {
+  project = <span class="c-str">"my-project"</span>
+
+  <span class="c-dim"># per-service custom endpoints point Terraform at kiri</span>
+  storage_custom_endpoint = <span class="c-str">"http://localhost:4443/storage/v1/"</span>
+  compute_custom_endpoint = <span class="c-str">"http://localhost:4443/compute/v1/"</span>
+  pubsub_custom_endpoint  = <span class="c-str">"http://localhost:4443/v1/"</span>
+}</pre></div>
+      <p class="note">Set <code>GOOGLE_OAUTH_ACCESS_TOKEN=dummy</code> so the provider skips real auth.</p>
+    </div>
+
+    <div class="panel stack" data-panel="curl" role="tabpanel">
+      <div class="code"><button class="copy" data-copy="#cl1">copy</button>
+<pre id="cl1"><span class="c-dim"># the wire format is the real GCP JSON API</span>
+curl -X POST <span class="c-str">"http://localhost:4443/storage/v1/b?project=my-project"</span> \
+  -H <span class="c-str">'Content-Type: application/json'</span> \
+  -d <span class="c-str">'{"name":"my-bucket"}'</span></pre></div>
+    </div>
+  </section>
+
   <section class="cost" id="cost">
     <div class="wrap cost-grid">
       <div class="cost-copy">
         <div class="badge">Cost Explorer, for GCP</div>
         <h2>Price the architecture before you build it.</h2>
-        <p>kiri carries a live pricing catalog — real Compute, Storage, and
-        BigQuery SKUs. Provision resources locally, then ask what a month would
-        cost. <b>No other GCP emulator does this.</b></p>
-        <p>The figures on the right are a real run: an order pipeline
-        (Storage → Pub/Sub → a Compute worker) provisioned through the actual Go
-        SDKs, then priced against the catalog and checked against a budget.</p>
+        <p>kiri carries a live pricing catalog with real Compute, Storage, and
+        BigQuery SKUs. Provision resources locally, then ask what a month would cost.
+        <b>No other GCP emulator does this.</b></p>
+        <p>The panel is a real run: an order pipeline (Storage to Pub/Sub to a
+        Compute worker) provisioned through the actual SDKs, priced against the
+        catalog, and checked against a budget.</p>
       </div>
       <div class="term" role="img" aria-label="Terminal showing a predicted monthly cost of 69 dollars 45 cents, within a 200 dollar budget at 34.7 percent.">
-        <div class="term-bar"><i></i><i></i><i></i><span>kiri — order-pipeline · monthly forecast</span></div>
+        <div class="term-bar"><i></i><i></i><i></i><span>kiri · order-pipeline · monthly forecast</span></div>
         <div class="term-body">
           <div><span class="dim"># prices pulled from kiri's live catalog</span></div>
-          <div><span class="ok">✓</span> vCPU <span class="dim">$0.031611/h</span> · RAM <span class="dim">$0.004237/GiB·h</span> · GCS <span class="dim">$0.020/GiB·mo</span></div>
+          <div><span class="ok">ok</span> vCPU <span class="dim">$0.031611/h</span> · RAM <span class="dim">$0.004237/GiB·h</span> · GCS <span class="dim">$0.020/GiB·mo</span></div>
           <div>&nbsp;</div>
           <div>Compute Engine <span class="dim">n1-standard-2 · 730h</span> &nbsp;= $&nbsp;69.35</div>
-          <div>Cloud Storage&nbsp;&nbsp;<span class="dim">5 GiB·mo</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= $&nbsp;&nbsp;0.10</div>
-          <div class="rule">──────────────────────────────</div>
+          <div>Cloud Storage&nbsp;&nbsp;<span class="dim">5 GiB·mo</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= $&nbsp;&nbsp;0.10</div>
+          <div class="rule">::::::::::::::::::::::::::::::::</div>
           <div class="total">projected total &nbsp;= <span class="big">$69.45 / month</span></div>
-          <div class="budget">
-            <div class="budget-track"><div class="budget-fill"></div></div>
-            <div class="budget-label"><span>budget $200</span><span>34.7% used</span></div>
-          </div>
+          <div class="budget-track"><div class="budget-fill"></div></div>
+          <div class="budget-label"><span>budget $200</span><span>34.7% used</span></div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- SERVICES -->
   <section class="block wrap" id="services">
     <div class="sec-head">
-      <span class="sec-num">03</span>
-      <span class="sec-title">108 services, 13 categories</span>
+      <span class="sec-num">04</span><span class="sec-title">108 services, 13 categories</span>
       <span class="sec-sub">Each one persists to disk and survives a restart.</span>
     </div>
+    <div class="svc-tools">
+      <label class="search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input id="svcSearch" type="text" placeholder="Filter services" aria-label="Filter services">
+      </label>
+      <span class="search-hint" id="svcHint">13 categories</span>
+    </div>
     <div class="grid" id="svcGrid"></div>
-    <div class="grid-total">One binary serves all <b>108</b> — REST and gRPC, sharing state.</div>
+  </section>
+
+  <section class="block wrap" id="config">
+    <div class="sec-head">
+      <span class="sec-num">05</span><span class="sec-title">Configuration</span>
+      <span class="sec-sub">Set via environment variables. Unset means in-memory only.</span>
+    </div>
+    <div class="card" style="padding:6px 4px">
+      <table class="cfg">
+        <thead><tr><th>Variable</th><th>Default</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>KIRI_HOST</code></td><td>0.0.0.0</td><td>Bind address</td></tr>
+          <tr><td><code>KIRI_HTTP_PORT</code></td><td>4443</td><td>REST / JSON port</td></tr>
+          <tr><td><code>KIRI_GRPC_PORT</code></td><td>8085</td><td>gRPC port (Pub/Sub, Firestore)</td></tr>
+          <tr><td><code>KIRI_DATA_DIR</code></td><td>unset</td><td>Directory for state snapshots. Enables persistence</td></tr>
+          <tr><td><code>KIRI_LOG_LEVEL</code></td><td>info</td><td>debug, info, warn, or error</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="code" style="margin-top:16px"><button class="copy" data-copy="#cfg1">copy</button>
+<pre id="cfg1"><span class="c-dim"># persistent run: state survives container restarts</span>
+docker run -p 4443:4443 -p 8085:8085 \
+  -e KIRI_DATA_DIR=<span class="c-str">/data</span> -v kiri-data:/data kiri</pre></div>
   </section>
 
 </main>
 
 <footer>
   <div class="wrap foot">
-    <div>
-      <span class="brand"><span style="color:var(--accent)">霧</span> kiri</span>
-      &nbsp;— the cloud, brought down to your machine.
-    </div>
-    <div>
-      <a href="https://github.com/kiri-dev/kiri">GitHub</a> ·
-      <a href="#quickstart">Quickstart</a> ·
-      GCP counterpart to <a href="https://github.com/sivchari/kumo">kumo</a>
-    </div>
+    <div><span class="brand"><span style="color:var(--accent)">霧</span> kiri</span>&nbsp;· the cloud, brought down to your machine.</div>
+    <div><a href="https://github.com/kiri-dev/kiri">GitHub</a> · <a href="#start">Quickstart</a> · counterpart to <a href="https://github.com/sivchari/kumo">kumo</a></div>
   </div>
 </footer>
 
 <script>
-  // theme toggle (respects OS default, remembers choice)
-  const root = document.documentElement, btn = document.getElementById('themeBtn');
-  const saved = localStorage.getItem('kiri-theme');
-  if(saved) root.setAttribute('data-theme', saved);
-  btn.addEventListener('click', ()=>{
-    const cur = root.getAttribute('data-theme')
-      || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark':'light');
-    const next = cur==='dark' ? 'light':'dark';
-    root.setAttribute('data-theme', next);
-    localStorage.setItem('kiri-theme', next);
+  const root=document.documentElement, tBtn=document.getElementById('themeBtn');
+  const savedTheme=localStorage.getItem('kiri-theme'); if(savedTheme) root.setAttribute('data-theme',savedTheme);
+  tBtn.addEventListener('click',()=>{
+    const cur=root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+    const next=cur==='dark'?'light':'dark'; root.setAttribute('data-theme',next); localStorage.setItem('kiri-theme',next);
   });
 
-  // copy hero command
-  const copyBtn = document.getElementById('copyBtn');
-  copyBtn.addEventListener('click', async ()=>{
-    try{
-      await navigator.clipboard.writeText(document.getElementById('runCmd').textContent);
-      copyBtn.textContent='copied'; setTimeout(()=>copyBtn.textContent='copy',1400);
-    }catch(e){ copyBtn.textContent='—'; }
+  // copy buttons (any element with data-copy pointing at a selector)
+  document.querySelectorAll('.copy').forEach(btn=>{
+    btn.addEventListener('click',async()=>{
+      const el=document.querySelector(btn.dataset.copy); if(!el) return;
+      try{ await navigator.clipboard.writeText(el.textContent.trim());
+        const o=btn.textContent; btn.textContent='copied'; setTimeout(()=>btn.textContent=o,1300);
+      }catch(e){ btn.textContent='err'; }
+    });
   });
 
-  // service grid
-  const cats = [
-    ["Analytics & ML",16,"BigQuery · Dataflow · Vertex AI"],
-    ["Databases",15,"Cloud SQL · Spanner · Firestore"],
-    ["Security",13,"IAM · Secret Manager · KMS"],
-    ["Networking",11,"Load Balancing · Cloud DNS"],
-    ["Management & Billing",8,"Cloud Billing · Cost · Resource Mgr"],
-    ["Compute",7,"Compute Engine · Cloud Run · Functions"],
-    ["Storage",6,"Cloud Storage · Persistent Disk"],
-    ["Containers",6,"GKE · Artifact Registry"],
-    ["Application Integration",6,"Workflows · Eventarc · Scheduler"],
-    ["Messaging & Integration",5,"Pub/Sub · Managed Kafka · FCM"],
-    ["Monitoring & Logging",5,"Monitoring · Logging · Trace"],
-    ["Developer Tools",5,"Cloud Build · Cloud Deploy"],
-    ["Other Services",5,"Identity Platform · Maps"],
+  // client tabs (persist choice, arrow-key nav)
+  const tabs=[...document.querySelectorAll('.tab')], panels=[...document.querySelectorAll('.panel')];
+  function select(name){
+    tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.tab===name));
+    panels.forEach(p=>p.classList.toggle('on', p.dataset.panel===name));
+    localStorage.setItem('kiri-client',name);
+  }
+  tabs.forEach((t,i)=>{
+    t.addEventListener('click',()=>select(t.dataset.tab));
+    t.addEventListener('keydown',e=>{
+      if(e.key==='ArrowRight'||e.key==='ArrowLeft'){
+        e.preventDefault(); const d=e.key==='ArrowRight'?1:-1;
+        const n=tabs[(i+d+tabs.length)%tabs.length]; n.focus(); select(n.dataset.tab);
+      }
+    });
+  });
+  const savedClient=localStorage.getItem('kiri-client'); if(savedClient && tabs.some(t=>t.dataset.tab===savedClient)) select(savedClient);
+
+  // services grid + live filter
+  const cats=[
+    ["Analytics & ML",16,"BigQuery, Dataflow, Vertex AI"],
+    ["Databases",15,"Cloud SQL, Spanner, Firestore"],
+    ["Security",13,"IAM, Secret Manager, KMS"],
+    ["Networking",11,"Load Balancing, Cloud DNS"],
+    ["Management & Billing",8,"Cloud Billing, Cost, Resource Manager"],
+    ["Compute",7,"Compute Engine, Cloud Run, Functions"],
+    ["Storage",6,"Cloud Storage, Persistent Disk"],
+    ["Containers",6,"GKE, Artifact Registry"],
+    ["Application Integration",6,"Workflows, Eventarc, Scheduler"],
+    ["Messaging & Integration",5,"Pub/Sub, Managed Kafka, FCM"],
+    ["Monitoring & Logging",5,"Monitoring, Logging, Trace"],
+    ["Developer Tools",5,"Cloud Build, Cloud Deploy"],
+    ["Other Services",5,"Identity Platform, Maps"],
   ];
-  document.getElementById('svcGrid').innerHTML = cats.map(([c,n,ex])=>`
-    <div class="svc">
-      <div class="top"><span class="cat">${c}</span><span class="cnt">${n}</span></div>
-      <div class="ex">${ex}</div>
-    </div>`).join('');
+  const grid=document.getElementById('svcGrid');
+  grid.innerHTML=cats.map(([c,n,ex])=>`<div class="svc" data-text="${(c+' '+ex).toLowerCase()}">
+    <div class="top"><span class="cat">${c}</span><span class="cnt">${n}</span></div>
+    <div class="ex">${ex}</div></div>`).join('');
+  const search=document.getElementById('svcSearch'), hint=document.getElementById('svcHint');
+  search.addEventListener('input',()=>{
+    const q=search.value.trim().toLowerCase(); let shown=0;
+    grid.querySelectorAll('.svc').forEach(el=>{
+      const hit=!q||el.dataset.text.includes(q); el.classList.toggle('hide',!hit); if(hit) shown++;
+    });
+    hint.textContent = q ? shown+' matching' : '13 categories';
+  });
 </script>
 </body>
 </html>

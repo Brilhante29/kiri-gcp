@@ -1,8 +1,8 @@
-# Scenario — order ingestion pipeline
+# Scenario, order ingestion pipeline
 
 A runnable, end-to-end proof that kiri is a drop-in local GCP. It provisions and
 exercises a small architecture using the **real, unmodified Google Cloud client
-libraries** — not curl, not mocks — then predicts what the design would cost.
+libraries**, not curl, not mocks, then predicts what the design would cost.
 
 ```
 order file ──Storage SDK──▶ GCS bucket "orders-inbox"
@@ -18,7 +18,7 @@ It runs six steps and asserts each one:
 3. Provision a Compute Engine worker (REST)
 4. Publish order events; the worker consumes them via streaming pull
 5. Pull live SKU prices from kiri's catalog, project the monthly cost, set a budget
-6. Behaviors — 404s, list scoping, instance stop/start lifecycle
+6. Behaviors, 404s, list scoping, instance stop/start lifecycle
 
 ## Run it
 
@@ -42,7 +42,7 @@ Expected tail:
 ```
    ✓ cost query total $69.45 matches projection $69.45
    ✓ projected spend $69.45 is within the $200 budget (34.7%)
-======== SCENARIO PASSED — every layer provisioned, exercised, and billed via real clients ========
+======== SCENARIO PASSED, every layer provisioned, exercised, and billed via real clients ========
 ```
 
 This module has its own `go.mod` (it depends on the real Google SDKs, which the

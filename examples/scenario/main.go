@@ -1,7 +1,7 @@
 // Command kiriscenario provisions and exercises a small but realistic GCP
 // architecture against kiri using the REAL, unmodified Google Cloud Go
 // client libraries (cloud.google.com/go/storage, cloud.google.com/go/pubsub)
-// plus the real REST wire format for Compute Engine and Cloud Billing — the
+// plus the real REST wire format for Compute Engine and Cloud Billing, the
 // exact calls a production app / gcloud would make, only the endpoint changes.
 //
 // Architecture: an "order ingestion pipeline"
@@ -13,7 +13,7 @@
 //
 // The billing step pulls live unit prices from the emulator's pricing catalog
 // and projects the monthly spend of the resources it just provisioned, then
-// checks that projection against a budget — GCP's Cost-Explorer analogue.
+// checks that projection against a budget, GCP's Cost-Explorer analogue.
 package main
 
 import (
@@ -51,7 +51,7 @@ var (
 func main() {
 	ctx := context.Background()
 
-	banner("kiri ARCHITECTURE SCENARIO — Order Ingestion Pipeline")
+	banner("kiri ARCHITECTURE SCENARIO, Order Ingestion Pipeline")
 	fmt.Printf("project=%s  zone=%s  REST=%s\n\n", projectID, zone, restEndpoint)
 
 	orderIDs := []string{"ORD-1001", "ORD-1002", "ORD-1003"}
@@ -68,20 +68,20 @@ func main() {
 	step("3. Provision compute worker (Compute Engine REST)")
 	provisionWorker()
 
-	step("4. Run workload — publish order events, worker consumes via streaming pull")
+	step("4. Run workload, publish order events, worker consumes via streaming pull")
 	runWorkload(ctx, topic, sub, orderIDs)
 
-	step("5. Billing — link account, PREDICT monthly cost from live catalog, set budget")
+	step("5. Billing, link account, PREDICT monthly cost from live catalog, set budget")
 	predictBilling()
 
-	step("6. Behaviors — 404s, list scoping, instance stop/start lifecycle")
+	step("6. Behaviors, 404s, list scoping, instance stop/start lifecycle")
 	checkBehaviors(ctx, stClient)
 
 	fmt.Println()
 	if failures == 0 {
-		banner("SCENARIO PASSED — every layer provisioned, exercised, and billed via real clients")
+		banner("SCENARIO PASSED, every layer provisioned, exercised, and billed via real clients")
 	} else {
-		banner(fmt.Sprintf("SCENARIO FAILED — %d assertion(s) did not hold", failures))
+		banner(fmt.Sprintf("SCENARIO FAILED, %d assertion(s) did not hold", failures))
 		os.Exit(1)
 	}
 }
@@ -92,7 +92,7 @@ func provisionStorage(ctx context.Context, c *storage.Client, orderIDs []string)
 	b := c.Bucket(bucket)
 	if err := b.Create(ctx, projectID, nil); err != nil {
 		// tolerate re-runs against a persisted volume
-		fmt.Printf("   note: bucket.Create: %v (continuing — may already exist)\n", err)
+		fmt.Printf("   note: bucket.Create: %v (continuing, may already exist)\n", err)
 	} else {
 		ok("bucket %q created", bucket)
 	}
@@ -234,7 +234,7 @@ func predictBilling() {
 		map[string]any{"billingAccountName": acct}, &info)
 	assert(info["billingEnabled"] == true, "project billing enabled after link")
 
-	// Pull LIVE unit prices from the emulator's pricing catalog — the prediction
+	// Pull LIVE unit prices from the emulator's pricing catalog, the prediction
 	// is driven by the emulator's own data, not hardcoded numbers.
 	cpuPrice := skuUnitPrice("6F81-5844-456A", "N1 Predefined vCPU running") // per vCPU-hour
 	ramPrice := skuUnitPrice("6F81-5844-456A", "N1 Predefined RAM running")  // per GiB-hour
@@ -299,7 +299,7 @@ func predictBilling() {
 	within := projected <= budgetAmount
 	assert(within, "projected spend $%.2f is within the $%.0f budget (%.1f%%)", projected, budgetAmount, pctOfBudget)
 	if pctOfBudget >= 80 {
-		fmt.Printf("   ⚠ projection at %.1f%% of budget — would trip the 80%% threshold alert\n", pctOfBudget)
+		fmt.Printf("   ⚠ projection at %.1f%% of budget, would trip the 80%% threshold alert\n", pctOfBudget)
 	} else {
 		fmt.Printf("   budget headroom: projection is %.1f%% of the $%.0f budget\n", pctOfBudget, budgetAmount)
 	}
