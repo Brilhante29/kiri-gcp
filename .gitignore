@@ -1,0 +1,22 @@
+# built binary (make build)
+/kiri
+kiri.exe
+
+# local state snapshots (KIRI_DATA_DIR)
+/data/
+*.local
+
+# scenario run artifacts
+examples/scenario/*_result.txt
+
+# go
+*.test
+*.out
+coverage.*
+
+# editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

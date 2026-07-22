@@ -1,0 +1,128 @@
+syntax = "proto3";
+
+package google.pubsub.v1;
+
+option go_package = "github.com/kumo-gcp/kumo-gcp/proto/google/pubsub/v1;pubsubpb";
+
+// PubsubMessage is a message published to a topic.
+message PubsubMessage {
+  bytes data = 1;
+  map<string, string> attributes = 2;
+  string message_id = 3;
+  string ordering_key = 4;
+}
+
+// PublishRequest is sent by a publisher to publish messages.
+message PublishRequest {
+  string topic = 1;
+  repeated PubsubMessage messages = 2;
+}
+
+message PublishResponse {
+  repeated string message_ids = 1;
+}
+
+message Topic {
+  string name = 1;
+  map<string, string> labels = 2;
+}
+
+message GetTopicRequest {
+  string topic = 1;
+}
+
+message DeleteTopicRequest {
+  string topic = 1;
+}
+
+message ListTopicsRequest {
+  string parent = 1;
+  int32 page_size = 2;
+}
+
+message ListTopicsResponse {
+  repeated Topic topics = 1;
+}
+
+message CreateTopicRequest {
+  string name = 1;
+  Topic topic = 2;
+}
+
+// Subscription represents a Pub/Sub subscription.
+message Subscription {
+  string name = 1;
+  string topic = 2;
+  PushConfig push_config = 3;
+  int32 ack_deadline_seconds = 4;
+}
+
+message PushConfig {
+  string push_endpoint = 1;
+}
+
+message CreateSubscriptionRequest {
+  string name = 1;
+  string topic = 2;
+  PushConfig push_config = 3;
+  int32 ack_deadline_seconds = 4;
+}
+
+message GetSubscriptionRequest {
+  string subscription = 1;
+}
+
+message DeleteSubscriptionRequest {
+  string subscription = 1;
+}
+
+message ListSubscriptionsRequest {
+  string parent = 1;
+  int32 page_size = 2;
+}
+
+message ListSubscriptionsResponse {
+  repeated Subscription subscriptions = 1;
+}
+
+message PullRequest {
+  string subscription = 1;
+  int32 max_messages = 2;
+  bool return_immediately = 3;
+}
+
+message PullResponse {
+  repeated ReceivedMessage received_messages = 1;
+}
+
+message ReceivedMessage {
+  string ack_id = 1;
+  PubsubMessage message = 2;
+  int32 delivery_attempt = 3;
+}
+
+message AcknowledgeRequest {
+  string subscription = 1;
+  repeated string ack_ids = 2;
+}
+
+message Empty {}
+
+// The Publisher service.
+service Publisher {
+  rpc Publish(PublishRequest) returns (PublishResponse);
+  rpc CreateTopic(CreateTopicRequest) returns (Topic);
+  rpc GetTopic(GetTopicRequest) returns (Topic);
+  rpc DeleteTopic(DeleteTopicRequest) returns (Empty);
+  rpc ListTopics(ListTopicsRequest) returns (ListTopicsResponse);
+}
+
+// The Subscriber service.
+service Subscriber {
+  rpc CreateSubscription(CreateSubscriptionRequest) returns (Subscription);
+  rpc GetSubscription(GetSubscriptionRequest) returns (Subscription);
+  rpc DeleteSubscription(DeleteSubscriptionRequest) returns (Empty);
+  rpc ListSubscriptions(ListSubscriptionsRequest) returns (ListSubscriptionsResponse);
+  rpc Pull(PullRequest) returns (PullResponse);
+  rpc Acknowledge(AcknowledgeRequest) returns (Empty);
+}

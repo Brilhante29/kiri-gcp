@@ -1,0 +1,18 @@
+services:
+  kiri:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: kiri:latest
+    ports:
+      - "4443:4443"
+      - "8085:8085"
+    environment:
+      KIRI_HOST: "0.0.0.0"
+      KIRI_HTTP_PORT: "4443"
+      KIRI_GRPC_PORT: "8085"
+      KIRI_LOG_LEVEL: info
+      # Mount a volume and set KIRI_DATA_DIR to enable persistence.
+      # KIRI_DATA_DIR: /data
+    # volumes:
+    #   - ./data:/data
