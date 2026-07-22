@@ -1,4 +1,4 @@
-# kiri — Design Spec
+# kiri: Design Spec
 
 **Date:** 2026-07-20
 **Status:** Approved, in implementation
@@ -9,7 +9,7 @@
 `kiri` is a lightweight **Google Cloud Platform (GCP) service emulator** written in
 Go, mirroring the architecture of [`kumo`](https://github.com/sivchari/kumo) (which
 emulates AWS). Same value proposition: no authentication, single binary, Docker-first,
-fast startup, optional data persistence — but for GCP APIs and client libraries instead
+fast startup, optional data persistence, but for GCP APIs and client libraries instead
 of AWS.
 
 It is a **sibling project**, independent of the AWS `kumo` codebase.
@@ -101,7 +101,7 @@ dispatcher is needed (unlike AWS JSON/Query/CBOR).
 Identical to `kumo`: each service implementing `io.Closer` saves to
 `$KIRI_DATA_DIR/{service}.json` on shutdown; loads on boot; atomic tmp+rename writes.
 
-## Cost / Billing — the "most complete" surface
+## Cost / Billing: the "most complete" surface
 
 Four cooperating surfaces under the `billing` + `costexplorer` packages:
 
@@ -111,7 +111,7 @@ Four cooperating surfaces under the `billing` + `costexplorer` packages:
 2. **Billing Budgets** (`billingbudgets.googleapis.com/v1`):
    `billingAccounts/{a}/budgets` CRUD with threshold rules.
 3. **Cost query** (kiri-specific, analogous to AWS `GetCostAndUsage`):
-   `POST /kumo/billing/cost` — returns line items grouped by service / SKU / project /
+   `POST /kumo/billing/cost`: returns line items grouped by service / SKU / project /
    label over a time window, with filters. GCP has no native cost API (production uses
    BigQuery billing export), so this is a first-class emulator convenience.
 4. **Detailed billing export**: a seedable, queryable detailed-cost table mirroring the
@@ -144,7 +144,7 @@ Categories mirror `kumo`'s catalog, adapted to GCP:
   Pub/Sub & Firestore. `PUBSUB_EMULATOR_HOST` / `FIRESTORE_EMULATOR_HOST` env vars work
   unchanged. gRPC server runs on KIRI_GRPC_PORT (default 8085), shared state with the
   REST layer via MergeBackend adapters. Firestore REST API added.
-- **Wave 3 (complete):** 12 remaining services implemented — BigQuery, Cloud Run,
+- **Wave 3 (complete):** 12 remaining services implemented: BigQuery, Cloud Run,
   Compute Engine, Cloud DNS, Cloud Functions, Cloud SQL, Cloud Tasks, Cloud Scheduler,
   GKE, Logging, Monitoring, Artifact Registry. All registered in the canonical blank-import
   registry. Total ~8,819 lines of Go across 47 source files.
