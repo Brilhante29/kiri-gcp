@@ -17,7 +17,7 @@ func (r *statusRecorder) WriteHeader(code int) {
 	r.ResponseWriter.WriteHeader(code)
 }
 
-// logging wraps next with structured per-request logging, mirroring kumo's
+// logging wraps next with structured per-request logging, producing a clean
 // INFO-level request log line.
 func logging(logger *slog.Logger, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

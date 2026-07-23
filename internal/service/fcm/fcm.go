@@ -1,7 +1,6 @@
 // Package fcm emulates Firebase Cloud Messaging (fcm.googleapis.com/v1):
-// message send, plus a kumo-style "/kumo/fcm/sent-messages" inspection
-// endpoint (mirroring how kumo's AWS SES emulation exposes sent emails) so
-// tests can assert on what was actually pushed without a real device.
+// message send, plus a /kiri/fcm/sent-messages inspection
+// endpoint so tests can assert on what was actually pushed without a real device.
 package fcm
 
 import (
@@ -23,9 +22,9 @@ func init() {
 }
 
 type sentMessage struct {
-	Name      string         `json:"name"`
-	Message   map[string]any `json:"message"`
-	SentAt    string         `json:"sentAt"`
+	Name    string         `json:"name"`
+	Message map[string]any `json:"message"`
+	SentAt  string         `json:"sentAt"`
 }
 
 type state struct {
@@ -49,7 +48,7 @@ func (s *Service) Meta() service.Meta {
 	return service.Meta{
 		Display:     "Firebase Cloud Messaging",
 		Category:    "Messaging & Integration",
-		Description: "Push notification send, with a /kumo/fcm/sent-messages inspection endpoint",
+		Description: "Push notification send, with a /kiri/fcm/sent-messages inspection endpoint",
 		Fidelity:    service.FidelityA,
 		State:       service.StateBehavioral,
 	}
@@ -66,7 +65,7 @@ func (s *Service) Close() error {
 // RegisterRoutes registers the FCM REST routes.
 func (s *Service) RegisterRoutes(r service.Router) {
 	r.Handle("POST", "/v1/projects/{project}/messages:send", s.send)
-	r.Handle("GET", "/kumo/fcm/sent-messages", s.listSent)
+	r.Handle("GET", "/kiri/fcm/sent-messages", s.listSent)
 }
 
 func (s *Service) send(w http.ResponseWriter, r *http.Request) {

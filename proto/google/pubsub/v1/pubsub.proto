@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package google.pubsub.v1;
 
-option go_package = "github.com/kumo-gcp/kumo-gcp/proto/google/pubsub/v1;pubsubpb";
+option go_package = "github.com/kiri-dev/kiri/proto/google/pubsub/v1;pubsubpb";
 
 // PubsubMessage is a message published to a topic.
 message PubsubMessage {

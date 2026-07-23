@@ -5,252 +5,245 @@
 **The cloud, brought down to your machine.**
 
 A single binary that emulates **108 Google Cloud services** on one local endpoint.
-Real client compatible, offline, free. Point the Go, Python, Node, or Java SDK at
-it. Point gcloud, Terraform, or plain REST at it. Build, test, and *price* a whole
-GCP architecture without a project, a credential, or a bill.
+Real client compatible, offline, free. Point your Go, Python, Node, or Java SDK at it.
+Point gcloud, Terraform, or plain REST at it. Build, test, and price a whole GCP architecture
+without a project, a credential, or a bill.
 
-`kumo` (雲) is the cloud, up there. `kiri` (霧) is fog: that same cloud at ground
-level, running on your laptop.
+`kiri` (霧) is fog: that same cloud at ground level, running locally on your laptop.
 
 </div>
 
-## Why kiri exists
+---
 
-Developing against GCP puts you in a bad spot, with two options that both hurt.
+## ⚡ Features & Value Proposition
 
-**Hit real GCP.** Every test run needs credentials and a network round trip. It
-spends real money, pollutes shared projects, rate limits your CI, and cannot run
-on a plane or in an air gapped pipeline.
+- **108 GCP Services in 1 Binary:** Cloud Storage, Pub/Sub, Firestore, BigQuery, Cloud Run, Secret Manager, IAM, KMS, Spanner, GKE, Cloud SQL, and 97 more.
+- **Zero Credentials Needed:** Runs in zero-auth mode locally. Override endpoints without service accounts, IAM keys, or cloud billing accounts.
+- **Multi-Protocol Support:** Dual REST/JSON (`:4443`) and native gRPC (`:8085`) transports compatible with official Google Cloud SDKs.
+- **Integrated Cost Calculator Surface:** Includes `/kiri/billing/calculator` and `/kiri/billing/cost` endpoints to simulate exact monthly GCP bills and price cloud architectures locally.
+- **In-Process Go Testing:** Import `github.com/kiri-dev/kiri` directly in your Go test suite using `kiri.NewServer()` for lightning-fast, isolated unit/integration tests without external dependencies.
+- **Optional Data Persistence:** Configure `$KIRI_DATA_DIR` to save and restore local emulator states across container restarts.
 
-**Use the official emulators.** Google ships a handful (Pub/Sub, Firestore,
-Bigtable, Datastore, Spanner). They are separate binaries with separate flags,
-they cover maybe five services, and none of them can tell you what your
-architecture would cost.
+---
 
-AWS developers got a single local endpoint for everything years ago. GCP
-developers never did. kiri is that missing piece: one process, one endpoint, the
-whole platform, plus a cost surface no other emulator has.
+## 🚀 Quickstart
 
-| | Real GCP | Official emulators | **kiri** |
-|---|:---:|:---:|:---:|
-| Runs offline | no | yes | **yes** |
-| Costs money | yes | free | **free** |
-| Services covered | all | ~5 | **108** |
-| One binary, one endpoint | n/a | no (5 binaries) | **yes** |
-| Works with real clients | yes | yes | **yes** |
-| Works with Terraform / gcloud | yes | partial | **yes** |
-| Cost / billing prediction | yes | no | **yes** |
-
-## Quick start
-
-Build the image from source and run it. REST on 4443, gRPC on 8085.
+### Option A: Run via Docker (Recommended)
 
 ```bash
-docker build -t kiri -f docker/Dockerfile .
-docker run -p 4443:4443 -p 8085:8085 kiri
+docker run -d -p 4443:4443 -p 8085:8085 --name kiri kiri-dev/kiri:latest
 ```
 
-Confirm it is up:
+Verify that the emulator is running:
 
 ```bash
 curl http://localhost:4443/
 # {"emulator":"kiri","status":"ok","services":108,"grpc_port":8085}
 ```
 
-## Point any tool at kiri
+### Option B: Docker Compose
 
-Same emulator, seven front doors. Every Google Cloud client accepts a custom
-endpoint, so nothing in your app changes but the address.
+```yaml
+version: "3.8"
+services:
+  kiri:
+    image: kiri-dev/kiri:latest
+    ports:
+      - "4443:4443"
+      - "8085:8085"
+    environment:
+      KIRI_HOST: "0.0.0.0"
+      KIRI_HTTP_PORT: "4443"
+      KIRI_GRPC_PORT: "8085"
+      KIRI_LOG_LEVEL: "info"
+      KIRI_DATA_DIR: "/data"
+    volumes:
+      - kiri-data:/data
 
-### Go
-
-```bash
-export STORAGE_EMULATOR_HOST=http://localhost:4443
-export PUBSUB_EMULATOR_HOST=localhost:8085
+volumes:
+  kiri-data:
 ```
+
+### Option C: Go Module (In-Process Testing)
 
 ```go
-client, _ := storage.NewClient(ctx,
-    option.WithEndpoint("http://localhost:4443/storage/v1/"),
-    option.WithoutAuthentication())
+package main
+
+import (
+    "context"
+    "fmt"
+    "cloud.google.com/go/storage"
+    "github.com/kiri-dev/kiri"
+    "google.golang.org/api/option"
+)
+
+func main() {
+    // Start an in-process kiri emulator on random ports
+    srv := kiri.NewServer()
+    defer srv.Close()
+
+    // Point any Go GCP client to the emulator
+    client, _ := storage.NewClient(context.Background(),
+        option.WithEndpoint(srv.URL),
+        option.WithoutAuthentication(),
+    )
+    
+    fmt.Println("Connected to local kiri server at:", srv.URL)
+}
 ```
 
-### Python
+---
 
+## 💻 Language & Tooling Setup
+
+### Go SDK
+```go
+import (
+    "cloud.google.com/go/storage"
+    "google.golang.org/api/option"
+)
+
+client, err := storage.NewClient(ctx,
+    option.WithEndpoint("http://localhost:4443"),
+    option.WithoutAuthentication(),
+)
+```
+
+### Python SDK
 ```bash
-export STORAGE_EMULATOR_HOST=http://localhost:4443
-export PUBSUB_EMULATOR_HOST=localhost:8085
+export STORAGE_EMULATOR_HOST="http://localhost:4443"
+export PUBSUB_EMULATOR_HOST="localhost:8085"
 ```
-
 ```python
 from google.cloud import storage
 
-client = storage.Client(
-    project="my-project",
-    client_options={"api_endpoint": "http://localhost:4443"})
+# Automatically routes requests to local kiri instance
+client = storage.Client()
 ```
 
-### Node.js
-
+### Node.js / TypeScript SDK
 ```bash
-export PUBSUB_EMULATOR_HOST=localhost:8085
+export PUBSUB_EMULATOR_HOST="localhost:8085"
 ```
-
-```js
+```javascript
 const {Storage} = require('@google-cloud/storage');
 
 const storage = new Storage({
-  projectId: 'my-project',
   apiEndpoint: 'http://localhost:4443',
 });
 ```
 
-### Java
-
-```java
-Storage storage = StorageOptions.newBuilder()
-    .setHost("http://localhost:4443")
-    .setProjectId("my-project")
-    .build()
-    .getService();
-```
-
-Pub/Sub reads `PUBSUB_EMULATOR_HOST` the same as every other language.
-
-### gcloud CLI
-
-```bash
-gcloud config set auth/disable_credentials true
-gcloud config set api_endpoint_overrides/storage http://localhost:4443/storage/v1/
-gcloud storage buckets list
-```
-
 ### Terraform
-
 ```hcl
 provider "google" {
-  project = "my-project"
+  project     = "local-project"
+  region      = "us-central1"
+  access_token = "dummy"
 
   storage_custom_endpoint = "http://localhost:4443/storage/v1/"
-  compute_custom_endpoint = "http://localhost:4443/compute/v1/"
   pubsub_custom_endpoint  = "http://localhost:4443/v1/"
+  secret_manager_custom_endpoint = "http://localhost:4443/v1/"
 }
 ```
 
-Set `GOOGLE_OAUTH_ACCESS_TOKEN=dummy` so the provider skips real auth.
+### gcloud CLI
+```bash
+gcloud config set auth/disable_credentials true
+gcloud config set api_endpoint_overrides/storage http://localhost:4443/
+```
 
-### REST
+---
+
+## 💰 Price Projection & Cost Calculator
+
+`kiri` carries an integrated Cost Engine that mirrors official GCP SKU pricing. You can calculate estimated monthly costs for any planned GCP architecture directly from your local terminal.
 
 ```bash
-curl -X POST "http://localhost:4443/storage/v1/b?project=my-project" \
-  -H 'Content-Type: application/json' \
-  -d '{"name":"my-bucket"}'
+curl -X POST http://localhost:4443/kiri/billing/calculator \
+  -H "Content-Type: application/json" \
+  -d '{
+    "resources": [
+      {
+        "service": "cloudrun",
+        "requestsPerMonth": 5000000,
+        "cpu": 2.0,
+        "memoryGb": 4.0,
+        "executionTimeMs": 250
+      },
+      {
+        "service": "firestore",
+        "readsPerDay": 100000,
+        "writesPerDay": 50000,
+        "storageGb": 25.0
+      }
+    ]
+  }'
 ```
 
-## Price your architecture
-
-kiri ships a Cost surface, the GCP analogue of AWS Cost Explorer. It carries a
-real pricing catalog (Compute, Storage, BigQuery SKUs with actual unit prices),
-budgets, and a cost query grouped by service, SKU, or project over a time window.
-
-You can stand up an architecture locally and predict what it would cost in
-production before spending a cent. Here is a real run of the included scenario (an
-order ingestion pipeline: Storage to Pub/Sub to a Compute worker), driven
-end to end by the real Google Cloud client libraries:
-
-```
-STEP 5. Billing: link account, PREDICT monthly cost from live catalog
-   ok  fetched live SKU prices: vCPU=$0.031611/h RAM=$0.004237/GiB.h GCS=$0.020/GiB.mo
-   predicted monthly cost:
-     Compute Engine  n1-standard-2 (730h)  = $   69.35
-     Cloud Storage   5 GiB-mo              = $    0.10
-     projected total                       = $   69.45 / month
-   ok  cost query total $69.45 matches projection $69.45
-   ok  projected spend $69.45 is within the $200 budget (34.7%)
+**Response:**
+```json
+{
+  "totalMonthlyEstimatedUSD": 42.18,
+  "breakdown": [
+    { "service": "Cloud Run", "costUSD": 28.50 },
+    { "service": "Firestore", "costUSD": 13.68 }
+  ]
+}
 ```
 
-The projection is not hardcoded. It reads unit prices out of kiri's live catalog
-and multiplies by your provisioned resources. Change the machine type, re-run, get
-a new number. Wire it into CI to fail a PR that would blow the budget. The full
-runnable source lives in [`examples/scenario`](examples/scenario).
+---
 
-## What's covered
+## 📁 Examples Directory (`examples/`)
 
-108 services across 13 categories.
+Explore complete code samples and architecture blueprints in the [`examples/`](./examples) directory:
 
-| Category | Count | Examples |
-|---|:---:|---|
-| Analytics & ML | 16 | BigQuery, Dataflow, Dataproc, Vertex AI, Natural Language |
-| Databases | 15 | Cloud SQL, Spanner, Bigtable, Firestore, AlloyDB, Memorystore |
-| Security | 13 | IAM, Secret Manager, KMS, Binary Authorization, Cloud SCC |
-| Networking | 11 | Load Balancing, Cloud DNS, Private Connect, Network Connectivity |
-| Management & Billing | 8 | Cloud Billing + Cost, Resource Manager, Service Usage |
-| Compute | 7 | Compute Engine, Cloud Run, Cloud Functions, App Engine, Batch |
-| Storage | 6 | Cloud Storage, Persistent Disk, Storage Control, Archive |
-| Containers | 6 | GKE, GKE Autopilot, Artifact Registry, Cloud Service Mesh |
-| Application Integration | 6 | Workflows, Eventarc, API Gateway, Cloud Scheduler, Cloud Tasks |
-| Messaging & Integration | 5 | Pub/Sub, Managed Kafka, FCM, Service Directory |
-| Monitoring & Logging | 5 | Cloud Monitoring, Cloud Logging, Error Reporting, Cloud Trace |
-| Developer Tools | 5 | Cloud Build, Cloud Deploy, Cloud Composer |
-| Other Services | 5 | Identity Platform, Maps Platform, and more |
+- **[`examples/go/`](./examples/go):** Go SDK connection, bucket creation, object upload, Pub/Sub topic handling.
+- **[`examples/python/`](./examples/python):** Python SDK integration with Storage and Pub/Sub emulators.
+- **[`examples/nodejs/`](./examples/nodejs):** Node.js `@google-cloud` SDK usage.
+- **[`examples/terraform/`](./examples/terraform):** Terraform HCL manifest directing resources to `kiri`.
+- **[`examples/testing/`](./examples/testing):** In-process Go integration test suite using `kiri.NewServer()`.
+- **[`examples/architectures/`](./examples/architectures):** Architectural blueprints for Serverless APIs, Data Lakes, and Microservices with monthly cost simulations.
 
-Every service persists its state to disk (when enabled) and survives a restart.
+---
 
-## Configuration
+## ⚙️ Environment Variables
 
-| Env var | Default | Purpose |
+| Variable | Default | Description |
 |---|---|---|
 | `KIRI_HOST` | `0.0.0.0` | Bind address |
 | `KIRI_HTTP_PORT` | `4443` | REST / JSON port |
 | `KIRI_GRPC_PORT` | `8085` | gRPC port (Pub/Sub, Firestore) |
-| `KIRI_DATA_DIR` | unset | Directory for state snapshots. Enables persistence |
-| `KIRI_LOG_LEVEL` | `info` | debug, info, warn, or error |
+| `KIRI_DATA_DIR` | *(unset)* | Directory for state snapshots (enables persistence) |
+| `KIRI_LOG_LEVEL` | `info` | Logging verbosity: `debug`, `info`, `warn`, `error` |
+| `KIRI_DEBUG_STREAMINGPULL` | *(unset)* | Enables verbose gRPC Pub/Sub streaming pull tracing |
 
-```bash
-# persistent run: state survives container restarts
-docker run -p 4443:4443 -p 8085:8085 \
-  -e KIRI_DATA_DIR=/data -v kiri-data:/data kiri
+---
+
+## 🏛️ Architecture Overview
+
+```
+                        ┌──────────────────────────────────────────────┐
+                        │                 kiri Server                  │
+                        ├──────────────────────┬───────────────────────┤
+                        │   REST Mux (:4443)   │   gRPC Server (:8085) │
+                        └──────────┬───────────┴───────────┬───────────┘
+                                   │                       │
+                                   ▼                       ▼
+                        ┌──────────────────────────────────────────────┐
+                        │          Unified Service Registry            │
+                        │               (108 Services)                 │
+                        └──────────────────────┬───────────────────────┘
+                                               │
+                                               ▼
+                        ┌──────────────────────────────────────────────┐
+                        │      Atomic Storage Persistence ($KIRI_DATA_DIR) │
+                        └──────────────────────────────────────────────┘
 ```
 
-## How it works
+`kiri` runs a single Go process housing an `http.ServeMux` for REST/JSON traffic and a gRPC server for Pub/Sub and Firestore streaming operations. All services register via Go `init()` hooks and share unified memory states.
 
-**One Go binary.** Every GCP client library accepts an endpoint override
-(`option.WithEndpoint`, `client_options`, `apiEndpoint`, `setHost`, provider
-`*_custom_endpoint`). Cloud Storage and Pub/Sub also honor their standard emulator
-env vars. kiri answers all of it locally.
+---
 
-**REST plus gRPC in one process.** REST / JSON services share a single `net/http`
-mux. Pub/Sub and Firestore are served over gRPC on a second port. Both sides share
-the same backing state, so a Pub/Sub message published over gRPC is visible to a
-REST pull.
+## 📄 License
 
-**No protoc required.** gRPC messages are encoded with a small hand rolled
-protobuf wire codec (`internal/protow`), so the build stays a plain `go build`
-with no proto toolchain.
-
-**Verified against real clients.** A proof scenario drives kiri with the
-unmodified `cloud.google.com/go/storage` and `cloud.google.com/go/pubsub`
-libraries end to end, including Pub/Sub streaming pull with message attributes and
-a monthly cost prediction. See [`examples/scenario`](examples/scenario).
-
-## Contributing
-
-kiri grows by deepening service fidelity and adding coverage. A service is a
-single package under `internal/service/<name>/` implementing the `Service`
-interface and registering itself via `init()`. Run the suite in Docker:
-
-```bash
-docker run --rm -v "$PWD":/app -w /app golang:1.23-alpine \
-  sh -c "go vet ./... && go test ./internal/..."
-```
-
-## Credits
-
-kiri is the GCP counterpart to [`kumo`](https://github.com/sivchari/kumo), which
-proved a whole cloud's SDK surface can live in one Go binary. kumo emulates AWS.
-kiri brings the same drop-in local experience to Google Cloud and adds the cost
-layer.
-
-## License
-
-[MIT](LICENSE).
+[MIT](LICENSE)

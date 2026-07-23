@@ -1,10 +1,29 @@
 # built binary (make build)
 /kiri
 kiri.exe
+*.exe
 
-# local state snapshots (KIRI_DATA_DIR)
+# local state snapshots & data files (KIRI_DATA_DIR)
 /data/
 *.local
+*.db
+*.sqlite
+*.sqlite3
+
+# environment variable files & sensitive credentials
+.env
+.env.*
+*.env
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*credentials*.json
+*service_account*.json
+gcp-key*.json
+credentials.json
+client_secret*.json
 
 # scenario run artifacts
 examples/scenario/*_result.txt
@@ -14,9 +33,16 @@ examples/scenario/*_result.txt
 *.out
 coverage.*
 
-# editor / OS
+# editor, AI tooling & OS
 .vscode/
 .idea/
+.opencode/
+.claude/
+.gemini/
+.cursor/
+.windsurf/
 *.swp
 .DS_Store
 Thumbs.db
+ehthumbs.db
+desktop.ini

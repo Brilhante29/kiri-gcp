@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package google.firestore.v1;
 
-option go_package = "github.com/kumo-gcp/kumo-gcp/proto/google/firestore/v1;firestorepb";
+option go_package = "github.com/kiri-dev/kiri/proto/google/firestore/v1;firestorepb";
 
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
