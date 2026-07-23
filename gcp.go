@@ -1,5 +1,5 @@
 // Package kiri provides a public API for running an in-process GCP service
-// emulator, mirroring the AWS kumo project's public API.
+// emulator.
 //
 // Usage:
 //

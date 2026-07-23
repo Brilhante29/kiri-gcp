@@ -538,11 +538,11 @@ func _Subscriber_Acknowledge_Handler(srv any, ctx context.Context, dec func(any)
 }
 
 // debugStreamingPull enables verbose stderr tracing of the StreamingPull
-// handler when KUMO_DEBUG_STREAMINGPULL is set. Kept behind an env var
+// handler when KIRI_DEBUG_STREAMINGPULL is set. Kept behind an env var
 // rather than deleted outright: bidi-streaming has no request/response log
 // hook like runUnary's interceptor does, so this is the only way to observe
 // its behavior against a real client without attaching a debugger.
-var debugStreamingPull = os.Getenv("KUMO_DEBUG_STREAMINGPULL") != ""
+var debugStreamingPull = os.Getenv("KIRI_DEBUG_STREAMINGPULL") != ""
 
 func dbgf(format string, args ...any) {
 	if debugStreamingPull {

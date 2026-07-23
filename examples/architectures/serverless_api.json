@@ -1,0 +1,31 @@
+{
+  "architectureName": "Serverless Microservice API",
+  "description": "Cloud Run container instances, Pub/Sub asynchronous event queue, Firestore NoSQL database, and Cloud Storage for asset storage",
+  "resources": [
+    {
+      "service": "cloudrun",
+      "requestsPerMonth": 10000000,
+      "cpu": 2.0,
+      "memoryGb": 4.0,
+      "executionTimeMs": 150
+    },
+    {
+      "service": "pubsub",
+      "messagesPerMonth": 25000000,
+      "messageSizeBytes": 2048
+    },
+    {
+      "service": "firestore",
+      "readsPerDay": 500000,
+      "writesPerDay": 200000,
+      "deletesPerDay": 10000,
+      "storageGb": 50.0
+    },
+    {
+      "service": "storage",
+      "storageGb": 250.0,
+      "operationsClassA": 100000,
+      "operationsClassB": 1000000
+    }
+  ]
+}

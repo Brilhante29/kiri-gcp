@@ -1,6 +1,5 @@
 // Package service provides the interfaces and utilities shared by all GCP
-// service emulations. It mirrors the design of the AWS kumo project's service
-// package, adapted to GCP's uniformly REST/JSON API surface.
+// service emulations.
 package service
 
 import "net/http"

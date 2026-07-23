@@ -1,15 +1,20 @@
 // Package billing emulates GCP's cost and billing surface — the closest
-// analogue to AWS Cost Explorer. It covers four cooperating surfaces:
+// analogue to AWS Cost Explorer. It covers five cooperating surfaces:
 //
 //  1. Cloud Billing (cloudbilling.googleapis.com/v1): billing accounts, project
-//     billing info, and the pricing catalog (services + SKUs).
+//     billing info, and the official GCP pricing catalog (services + SKUs).
 //  2. Billing Budgets (billingbudgets.googleapis.com/v1): budgets CRUD.
 //  3. Cost query (/kiri/billing/cost): line items grouped by service/sku/project
 //     over a time window — the GetCostAndUsage analogue.
 //  4. Detailed export seeding (/kiri/billing/seed): inject cost line items.
+//  5. GCP Price Calculator (/kiri/billing/calculator): calculate exact monthly
+//     estimated costs based on official GCP SKU pricing rules, supporting custom
+//     VMs (vCPU/RAM/schedule), Cloud Run Jobs, and Vertex AI.
 package billing
 
 import (
+	"fmt"
+	"math"
 	"net/http"
 	"sort"
 	"strings"
@@ -116,36 +121,85 @@ func (s *Service) Meta() service.Meta {
 	return service.Meta{
 		Display:     "Cloud Billing",
 		Category:    "Management & Billing",
-		Description: "Billing accounts, budgets, pricing catalog, and cost query (Cost Explorer analogue)",
+		Description: "Billing accounts, budgets, pricing catalog, price calculator, and cost query",
 		Fidelity:    service.FidelityA,
 		State:       service.StateBehavioral,
 	}
 }
 
-// seedDefaults installs a default billing account, a small pricing catalog and
-// a handful of cost line items so the cost query returns data out of the box.
+// seedDefaults installs default billing accounts, an official GCP pricing catalog,
+// and realistic cost line items matching the GCP Pricing Calculator rules.
 func (s *Service) seedDefaults() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	if len(s.state.Accounts) == 0 {
 		s.state.Accounts["billingAccounts/000000-000000-000000"] = &account{
-			Name: "billingAccounts/000000-000000-000000", DisplayName: "kiri Billing Account", Open: true,
+			Name: "billingAccounts/000000-000000-000000", DisplayName: "kiri Billing Account (Gold Standard)", Open: true,
 		}
 	}
 
 	if len(s.state.Catalog) == 0 {
 		s.state.Catalog = []*catalogService{
-			{ServiceID: "6F81-5844-456A", DisplayName: "Compute Engine", SKUs: []*sku{
-				{SkuID: "2E27-4F0B-8D3E", Description: "N1 Predefined vCPU running", UnitPrice: 0.031611, Unit: "h"},
-				{SkuID: "8004-56A0-9F0B", Description: "N1 Predefined RAM running", UnitPrice: 0.004237, Unit: "GiB.h"},
-			}},
-			{ServiceID: "95FF-2EF5-5EA1", DisplayName: "Cloud Storage", SKUs: []*sku{
-				{SkuID: "E5F0-6A5D-7BAD", Description: "Standard Storage US", UnitPrice: 0.020, Unit: "GiB.mo"},
-			}},
-			{ServiceID: "24E6-581D-38E5", DisplayName: "BigQuery", SKUs: []*sku{
-				{SkuID: "24E6-581D-38E5-Q", Description: "Analysis (on-demand queries)", UnitPrice: 5.0, Unit: "TiB"},
-			}},
+			{
+				ServiceID:   "6F81-5844-456A",
+				DisplayName: "Compute Engine",
+				SKUs: []*sku{
+					{SkuID: "2E27-4F0B-8D3E", Description: "N1 Predefined vCPU running in Americas", UnitPrice: 0.031611, Unit: "h"},
+					{SkuID: "8004-56A0-9F0B", Description: "N1 Predefined RAM running in Americas", UnitPrice: 0.004237, Unit: "GiB.h"},
+					{SkuID: "E200-11AA-45BC", Description: "E2 Predefined vCPU running in Americas", UnitPrice: 0.022800, Unit: "h"},
+					{SkuID: "E200-22BB-67DD", Description: "E2 Predefined RAM running in Americas", UnitPrice: 0.003060, Unit: "GiB.h"},
+					{SkuID: "D90F-47A1-19B2", Description: "Storage PD Capacity", UnitPrice: 0.040000, Unit: "GiB.mo"},
+					{SkuID: "F23A-8811-99CC", Description: "SSD backed PD Capacity", UnitPrice: 0.170000, Unit: "GiB.mo"},
+				},
+			},
+			{
+				ServiceID:   "95FF-2EF5-5EA1",
+				DisplayName: "Cloud Storage",
+				SKUs: []*sku{
+					{SkuID: "E5F0-6A5D-7BAD", Description: "Standard Storage US", UnitPrice: 0.020000, Unit: "GiB.mo"},
+					{SkuID: "D812-7F3A-010A", Description: "Nearline Storage US", UnitPrice: 0.010000, Unit: "GiB.mo"},
+					{SkuID: "B901-44C2-81F0", Description: "Coldline Storage US", UnitPrice: 0.004000, Unit: "GiB.mo"},
+					{SkuID: "A112-99B1-002C", Description: "Archive Storage US", UnitPrice: 0.001200, Unit: "GiB.mo"},
+					{SkuID: "C120-77A1-33B2", Description: "Class A Operations", UnitPrice: 0.005000, Unit: "1k-ops"},
+					{SkuID: "C120-77A2-33B3", Description: "Class B Operations", UnitPrice: 0.000400, Unit: "1k-ops"},
+				},
+			},
+			{
+				ServiceID:   "24E6-581D-38E5",
+				DisplayName: "BigQuery",
+				SKUs: []*sku{
+					{SkuID: "24E6-581D-38E5-Q", Description: "Analysis (on-demand queries)", UnitPrice: 5.000000, Unit: "TiB"},
+					{SkuID: "24E6-581D-38E5-S", Description: "Active Storage", UnitPrice: 0.020000, Unit: "GiB.mo"},
+					{SkuID: "24E6-581D-38E5-L", Description: "Long-term Storage", UnitPrice: 0.010000, Unit: "GiB.mo"},
+				},
+			},
+			{
+				ServiceID:   "A916-0428-A68B",
+				DisplayName: "Pub/Sub",
+				SKUs: []*sku{
+					{SkuID: "A916-0428-A68B-M", Description: "Message Ingestion & Delivery", UnitPrice: 0.040000, Unit: "GiB"},
+				},
+			},
+			{
+				ServiceID:   "23BC-0210-91CD",
+				DisplayName: "Cloud Run & Cloud Run Jobs",
+				SKUs: []*sku{
+					{SkuID: "23BC-0210-CPU", Description: "CPU Allocation", UnitPrice: 0.000024, Unit: "vCPU.s"},
+					{SkuID: "23BC-0210-RAM", Description: "Memory Allocation", UnitPrice: 0.0000025, Unit: "GiB.s"},
+					{SkuID: "23BC-0210-REQ", Description: "Requests", UnitPrice: 0.400000, Unit: "1M-req"},
+				},
+			},
+			{
+				ServiceID:   "C902-881A-99FE",
+				DisplayName: "Vertex AI",
+				SKUs: []*sku{
+					{SkuID: "C902-881A-TRAIN", Description: "Custom Training Node Hour", UnitPrice: 0.220000, Unit: "node.h"},
+					{SkuID: "C902-881A-GPU", Description: "NVIDIA T4 GPU Hour", UnitPrice: 0.350000, Unit: "gpu.h"},
+					{SkuID: "C902-881A-TIN", Description: "LLM Input Tokens", UnitPrice: 0.000150, Unit: "1k-tokens"},
+					{SkuID: "C902-881A-TOUT", Description: "LLM Output Tokens", UnitPrice: 0.000600, Unit: "1k-tokens"},
+				},
+			},
 		}
 	}
 
@@ -154,9 +208,11 @@ func (s *Service) seedDefaults() {
 		start := today.AddDate(0, 0, -1).Format("2006-01-02")
 		end := today.Format("2006-01-02")
 		s.state.Costs = []*costLineItem{
-			{Service: "Compute Engine", SKU: "N1 Predefined vCPU running", Project: "demo-project", Cost: 12.34, Currency: "USD", UsageStart: start, UsageEnd: end},
-			{Service: "Cloud Storage", SKU: "Standard Storage US", Project: "demo-project", Cost: 3.21, Currency: "USD", UsageStart: start, UsageEnd: end},
-			{Service: "BigQuery", SKU: "Analysis (on-demand queries)", Project: "demo-project", Cost: 7.89, Currency: "USD", UsageStart: start, UsageEnd: end},
+			{Service: "Compute Engine", SKU: "N1 Predefined vCPU running in Americas", Project: "demo-project", Cost: 23.07, Currency: "USD", UsageStart: start, UsageEnd: end},
+			{Service: "Compute Engine", SKU: "N1 Predefined RAM running in Americas", Project: "demo-project", Cost: 12.37, Currency: "USD", UsageStart: start, UsageEnd: end},
+			{Service: "Cloud Storage", SKU: "Standard Storage US", Project: "demo-project", Cost: 4.50, Currency: "USD", UsageStart: start, UsageEnd: end},
+			{Service: "BigQuery", SKU: "Analysis (on-demand queries)", Project: "demo-project", Cost: 15.00, Currency: "USD", UsageStart: start, UsageEnd: end},
+			{Service: "Pub/Sub", SKU: "Message Ingestion & Delivery", Project: "demo-project", Cost: 2.40, Currency: "USD", UsageStart: start, UsageEnd: end},
 		}
 	}
 }
@@ -179,9 +235,10 @@ func (s *Service) RegisterRoutes(r service.Router) {
 	r.Handle("PATCH", "/v1/billingAccounts/{account}/budgets/{budget}", s.patchBudget)
 	r.Handle("DELETE", "/v1/billingAccounts/{account}/budgets/{budget}", s.deleteBudget)
 
-	// kiri cost query surface (Cost Explorer analogue).
+	// kiri cost query and price calculator surfaces.
 	r.Handle("POST", "/kiri/billing/cost", s.queryCost)
 	r.Handle("POST", "/kiri/billing/seed", s.seedCost)
+	r.Handle("POST", "/kiri/billing/calculator", s.calculateEstimate)
 }
 
 // Close persists state if configured.
@@ -312,7 +369,8 @@ func (s *Service) listSKUs(w http.ResponseWriter, r *http.Request) {
 					"pricingExpression": map[string]any{
 						"usageUnit": k.Unit,
 						"tieredRates": []map[string]any{{
-							"unitPrice": map[string]any{"currencyCode": "USD", "units": units, "nanos": nanos},
+							"startUsageAmount": 0,
+							"unitPrice":        map[string]any{"currencyCode": "USD", "units": units, "nanos": nanos},
 						}},
 					},
 				}},
@@ -547,6 +605,343 @@ func (s *Service) seedCost(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, http.StatusOK, map[string]any{"added": len(items), "total": n})
 }
 
+// ---- GCP Price Calculator Surface ----
+
+type calculatorItem struct {
+	Service              string  `json:"service"`              // "compute" | "gcs" | "bigquery" | "pubsub" | "cloudrun" | "cloudrunjobs" | "vertexai"
+	MachineType          string  `json:"machineType"`          // e.g. "n1-standard-1", "e2-standard-4"
+	Instances            int     `json:"instances"`            // number of instances (default 1)
+	VCPUs                float64 `json:"vcpus"`                // total vCPUs if custom spec (e.g. 4)
+	MemoryGiB            float64 `json:"memoryGiB"`            // total memory in GiB (e.g. 7.0)
+	StorageGiB           float64 `json:"storageGiB"`           // persistent storage in GiB
+	StorageClass         string  `json:"storageClass"`         // "standard" | "nearline" | "coldline" | "archive"
+	HoursPerMonth        float64 `json:"hoursPerMonth"`        // total runtime hours per month (default 730 if unset)
+	DailyOnHours         float64 `json:"dailyOnHours"`         // hours ON per day (e.g. 9.0 -> 270h/mo)
+	QueriesTiB           float64 `json:"queriesTiB"`           // BigQuery query volume in TiB
+	IngestionGiB         float64 `json:"ingestionGiB"`         // Pub/Sub or log volume in GiB
+	RequestsCount        float64 `json:"requestsCount"`        // Invocations or HTTP requests
+	ExecutionSeconds     float64 `json:"executionSeconds"`     // Cloud Run Jobs total task execution duration in seconds
+	TaskCount            int     `json:"taskCount"`            // Cloud Run Jobs number of task runs
+	TaskDurationSeconds  float64 `json:"taskDurationSeconds"`  // Duration per task run in seconds
+	NodeHours            float64 `json:"nodeHours"`            // Vertex AI training node hours
+	GPUCount             int     `json:"gpuCount"`             // Vertex AI GPUs
+	InputTokens          float64 `json:"inputTokens"`          // Vertex AI LLM input tokens (in thousands)
+	OutputTokens         float64 `json:"outputTokens"`         // Vertex AI LLM output tokens (in thousands)
+}
+
+type calculatorLineItem struct {
+	SKUDescription string  `json:"skuDescription"`
+	Formula        string  `json:"formula"`
+	UnitPrice      float64 `json:"unitPrice"`
+	UsageAmount    float64 `json:"usageAmount"`
+	Unit           string  `json:"unit"`
+	MonthlyCost    float64 `json:"monthlyCost"`
+}
+
+func (s *Service) calculateEstimate(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Items []calculatorItem `json:"items"`
+	}
+	if err := httpx.DecodeJSON(r, &req); err != nil {
+		httpx.BadRequest(w, err.Error())
+		return
+	}
+
+	if len(req.Items) == 0 {
+		httpx.BadRequest(w, "items array cannot be empty")
+		return
+	}
+
+	var totalCost float64
+	var lineItems []calculatorLineItem
+
+	for _, item := range req.Items {
+		hours := item.HoursPerMonth
+		if hours <= 0 {
+			if item.DailyOnHours > 0 {
+				hours = item.DailyOnHours * 30 // e.g. 9h ON per day * 30 days = 270h/mo
+			} else {
+				hours = 730 // Standard GCP billing month hours (365 * 24 / 12)
+			}
+		}
+
+		instances := item.Instances
+		if instances <= 0 {
+			instances = 1
+		}
+
+		svcLower := strings.ToLower(item.Service)
+
+		switch svcLower {
+		case "compute", "compute engine", "gce", "vm", "vms":
+			vcpus := item.VCPUs
+			mem := item.MemoryGiB
+
+			if item.MachineType != "" {
+				switch strings.ToLower(item.MachineType) {
+				case "n1-standard-1":
+					vcpus, mem = 1, 3.75
+				case "n1-standard-2":
+					vcpus, mem = 2, 7.5
+				case "n1-standard-4":
+					vcpus, mem = 4, 15.0
+				case "e2-standard-2":
+					vcpus, mem = 2, 8.0
+				case "e2-standard-4":
+					vcpus, mem = 4, 16.0
+				case "e2-micro":
+					vcpus, mem = 0.25, 1.0
+				default:
+					if vcpus <= 0 {
+						vcpus = 1
+					}
+					if mem <= 0 {
+						mem = 3.75
+					}
+				}
+			} else {
+				if vcpus <= 0 {
+					vcpus = 1
+				}
+				if mem <= 0 {
+					mem = 3.75
+				}
+			}
+
+			// vCPU cost: $0.031611 per vCPU-hour
+			vcpuHours := vcpus * float64(instances) * hours
+			vcpuCost := vcpuHours * 0.031611
+			lineItems = append(lineItems, calculatorLineItem{
+				SKUDescription: "N1 Predefined vCPU running in Americas",
+				Formula:        fmt.Sprintf("%.2f vCPUs * %d instances * %.1f hrs/mo * $0.031611", vcpus, instances, hours),
+				UnitPrice:      0.031611,
+				UsageAmount:    round2(vcpuHours),
+				Unit:           "h",
+				MonthlyCost:    round2(vcpuCost),
+			})
+
+			// Memory cost: $0.004237 per GiB-hour
+			ramHours := mem * float64(instances) * hours
+			ramCost := ramHours * 0.004237
+			lineItems = append(lineItems, calculatorLineItem{
+				SKUDescription: "N1 Predefined RAM running in Americas",
+				Formula:        fmt.Sprintf("%.2f GiB RAM * %d instances * %.1f hrs/mo * $0.004237", mem, instances, hours),
+				UnitPrice:      0.004237,
+				UsageAmount:    round2(ramHours),
+				Unit:           "GiB.h",
+				MonthlyCost:    round2(ramCost),
+			})
+
+			// Persistent Disk Capacity: Disk persists even when VM is turned OFF (billed 730h/month)
+			if item.StorageGiB > 0 {
+				diskCost := item.StorageGiB * float64(instances) * 0.040
+				lineItems = append(lineItems, calculatorLineItem{
+					SKUDescription: "Storage PD Capacity (Persistent)",
+					Formula:        fmt.Sprintf("%.1f GiB * %d instances * $0.040/GiB-mo", item.StorageGiB, instances),
+					UnitPrice:      0.040000,
+					UsageAmount:    round2(item.StorageGiB * float64(instances)),
+					Unit:           "GiB.mo",
+					MonthlyCost:    round2(diskCost),
+				})
+				totalCost += diskCost
+			}
+
+			totalCost += vcpuCost + ramCost
+
+		case "cloudrunjobs", "cloud run jobs", "run jobs", "cloudrun job":
+			totalExecSec := item.ExecutionSeconds
+			if totalExecSec <= 0 && item.TaskCount > 0 && item.TaskDurationSeconds > 0 {
+				totalExecSec = float64(item.TaskCount) * item.TaskDurationSeconds
+			}
+			if totalExecSec <= 0 {
+				totalExecSec = 3600 // Default 1 hour of execution
+			}
+
+			vcpus := item.VCPUs
+			if vcpus <= 0 {
+				vcpus = 1
+			}
+			mem := item.MemoryGiB
+			if mem <= 0 {
+				mem = 2.0
+			}
+
+			vcpuSec := vcpus * float64(instances) * totalExecSec
+			vcpuCost := vcpuSec * 0.000024
+			lineItems = append(lineItems, calculatorLineItem{
+				SKUDescription: "Cloud Run Jobs CPU Allocation",
+				Formula:        fmt.Sprintf("%.2f vCPUs * %d instances * %.1f sec * $0.000024/vCPU-s", vcpus, instances, totalExecSec),
+				UnitPrice:      0.000024,
+				UsageAmount:    round2(vcpuSec),
+				Unit:           "vCPU.s",
+				MonthlyCost:    round2(vcpuCost),
+			})
+
+			memSec := mem * float64(instances) * totalExecSec
+			memCost := memSec * 0.0000025
+			lineItems = append(lineItems, calculatorLineItem{
+				SKUDescription: "Cloud Run Jobs Memory Allocation",
+				Formula:        fmt.Sprintf("%.2f GiB * %d instances * %.1f sec * $0.0000025/GiB-s", mem, instances, totalExecSec),
+				UnitPrice:      0.0000025,
+				UsageAmount:    round2(memSec),
+				Unit:           "GiB.s",
+				MonthlyCost:    round2(memCost),
+			})
+
+			totalCost += vcpuCost + memCost
+
+		case "vertexai", "vertex ai", "vertex":
+			nodeHours := item.NodeHours
+			if nodeHours <= 0 {
+				if item.DailyOnHours > 0 {
+					nodeHours = item.DailyOnHours * 30
+				} else {
+					nodeHours = hours
+				}
+			}
+
+			if item.NodeHours > 0 || item.VCPUs > 0 || item.GPUCount > 0 {
+				trainingCost := nodeHours * float64(instances) * 0.220000
+				lineItems = append(lineItems, calculatorLineItem{
+					SKUDescription: "Vertex AI Custom Training Node Hour",
+					Formula:        fmt.Sprintf("%d nodes * %.1f hrs * $0.22/node-h", instances, nodeHours),
+					UnitPrice:      0.220000,
+					UsageAmount:    round2(nodeHours * float64(instances)),
+					Unit:           "node.h",
+					MonthlyCost:    round2(trainingCost),
+				})
+				totalCost += trainingCost
+
+				if item.GPUCount > 0 {
+					gpuHours := float64(item.GPUCount*instances) * nodeHours
+					gpuCost := gpuHours * 0.350000
+					lineItems = append(lineItems, calculatorLineItem{
+						SKUDescription: "NVIDIA T4 GPU Hour",
+						Formula:        fmt.Sprintf("%d GPUs * %.1f hrs * $0.35/gpu-h", item.GPUCount*instances, nodeHours),
+						UnitPrice:      0.350000,
+						UsageAmount:    round2(gpuHours),
+						Unit:           "gpu.h",
+						MonthlyCost:    round2(gpuCost),
+					})
+					totalCost += gpuCost
+				}
+			}
+
+			if item.InputTokens > 0 {
+				inTokenCost := (item.InputTokens / 1000.0) * 0.00015
+				lineItems = append(lineItems, calculatorLineItem{
+					SKUDescription: "LLM Input Tokens",
+					Formula:        fmt.Sprintf("%.1f k-tokens * $0.00015/1k-tokens", item.InputTokens),
+					UnitPrice:      0.000150,
+					UsageAmount:    round2(item.InputTokens),
+					Unit:           "1k-tokens",
+					MonthlyCost:    round2(inTokenCost),
+				})
+				totalCost += inTokenCost
+			}
+
+			if item.OutputTokens > 0 {
+				outTokenCost := (item.OutputTokens / 1000.0) * 0.0006
+				lineItems = append(lineItems, calculatorLineItem{
+					SKUDescription: "LLM Output Tokens",
+					Formula:        fmt.Sprintf("%.1f k-tokens * $0.0006/1k-tokens", item.OutputTokens),
+					UnitPrice:      0.000600,
+					UsageAmount:    round2(item.OutputTokens),
+					Unit:           "1k-tokens",
+					MonthlyCost:    round2(outTokenCost),
+				})
+				totalCost += outTokenCost
+			}
+
+		case "gcs", "cloud storage", "storage":
+			rate := 0.020 // Standard US
+			skuDesc := "Standard Storage US"
+
+			switch strings.ToLower(item.StorageClass) {
+			case "nearline":
+				rate = 0.010
+				skuDesc = "Nearline Storage US"
+			case "coldline":
+				rate = 0.004
+				skuDesc = "Coldline Storage US"
+			case "archive":
+				rate = 0.0012
+				skuDesc = "Archive Storage US"
+			}
+
+			storageCost := item.StorageGiB * rate
+			lineItems = append(lineItems, calculatorLineItem{
+				SKUDescription: skuDesc,
+				Formula:        fmt.Sprintf("%.1f GiB * $%.4f/GiB-mo", item.StorageGiB, rate),
+				UnitPrice:      rate,
+				UsageAmount:    round2(item.StorageGiB),
+				Unit:           "GiB.mo",
+				MonthlyCost:    round2(storageCost),
+			})
+			totalCost += storageCost
+
+		case "bigquery", "bq":
+			if item.QueriesTiB > 0 {
+				queryCost := item.QueriesTiB * 5.00
+				lineItems = append(lineItems, calculatorLineItem{
+					SKUDescription: "Analysis (on-demand queries)",
+					Formula:        fmt.Sprintf("%.2f TiB * $5.00/TiB", item.QueriesTiB),
+					UnitPrice:      5.000000,
+					UsageAmount:    round2(item.QueriesTiB),
+					Unit:           "TiB",
+					MonthlyCost:    round2(queryCost),
+				})
+				totalCost += queryCost
+			}
+
+			if item.StorageGiB > 0 {
+				bqStorageCost := item.StorageGiB * 0.020
+				lineItems = append(lineItems, calculatorLineItem{
+					SKUDescription: "Active Storage",
+					Formula:        fmt.Sprintf("%.1f GiB * $0.020/GiB-mo", item.StorageGiB),
+					UnitPrice:      0.020000,
+					UsageAmount:    round2(item.StorageGiB),
+					Unit:           "GiB.mo",
+					MonthlyCost:    round2(bqStorageCost),
+				})
+				totalCost += bqStorageCost
+			}
+
+		case "pubsub", "pub/sub":
+			ingestCost := item.IngestionGiB * 0.040
+			lineItems = append(lineItems, calculatorLineItem{
+				SKUDescription: "Message Ingestion & Delivery",
+				Formula:        fmt.Sprintf("%.1f GiB * $0.040/GiB", item.IngestionGiB),
+				UnitPrice:      0.040000,
+				UsageAmount:    round2(item.IngestionGiB),
+				Unit:           "GiB",
+				MonthlyCost:    round2(ingestCost),
+			})
+			totalCost += ingestCost
+
+		case "cloudrun", "cloud run":
+			reqMillions := item.RequestsCount / 1000000.0
+			reqCost := reqMillions * 0.40
+			lineItems = append(lineItems, calculatorLineItem{
+				SKUDescription: "Requests",
+				Formula:        fmt.Sprintf("%.2f M requests * $0.40/M-req", reqMillions),
+				UnitPrice:      0.400000,
+				UsageAmount:    round2(reqMillions),
+				Unit:           "1M-req",
+				MonthlyCost:    round2(reqCost),
+			})
+			totalCost += reqCost
+		}
+	}
+
+	httpx.WriteJSON(w, http.StatusOK, map[string]any{
+		"currency":     "USD",
+		"monthlyTotal": round2(totalCost),
+		"lineItems":    lineItems,
+		"disclaimer":   "Prices estimated using official Google Cloud Pricing Calculator rules (Americas multi-region rates).",
+	})
+}
+
 func round2(f float64) float64 {
-	return float64(int64(f*100+0.5)) / 100
+	return math.Round(f*100) / 100
 }

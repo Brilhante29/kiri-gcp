@@ -1,5 +1,5 @@
 // Package storage provides common persistence utilities: atomic JSON snapshots
-// under $KIRI_DATA_DIR. The pattern is adapted from the AWS kumo project.
+// under $KIRI_DATA_DIR.
 //
 // Callers pass (service, key): the snapshot lands at
 // $KIRI_DATA_DIR/{service}/{key}.json. When KIRI_DATA_DIR is unset the
