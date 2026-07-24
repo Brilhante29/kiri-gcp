@@ -15,12 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
-        with:
-          go-version: stable
-      - uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
-          # Build golangci-lint from source with the runner's Go so it is never
-          # older than the module's target Go version.
-          install-mode: goinstall
+      # Run golangci-lint from its official image so the linter binary is always
+      # built with a Go version >= the module's target, and matches the v2 config.
+      - name: golangci-lint
+        run: docker run --rm -v "${{ github.workspace }}":/app -w /app golangci/golangci-lint:latest golangci-lint run ./...
