@@ -23,12 +23,12 @@ func init() {
 }
 
 type logEntry struct {
-	LogName   string         `json:"logName,omitempty"`
-	Severity  string         `json:"severity,omitempty"`
-	TextPayload string       `json:"textPayload,omitempty"`
+	LogName     string         `json:"logName,omitempty"`
+	Severity    string         `json:"severity,omitempty"`
+	TextPayload string         `json:"textPayload,omitempty"`
 	JSONPayload map[string]any `json:"jsonPayload,omitempty"`
-	Timestamp string         `json:"timestamp"`
-	InsertID  string         `json:"insertId"`
+	Timestamp   string         `json:"timestamp"`
+	InsertID    string         `json:"insertId"`
 }
 
 type logMetric struct {

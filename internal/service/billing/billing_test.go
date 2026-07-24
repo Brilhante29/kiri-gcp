@@ -61,7 +61,7 @@ func TestBillingServicePriceCalculatorScenario(t *testing.T) {
 	}
 
 	var calcResult struct {
-		Currency     string `json:"currency"`
+		Currency     string  `json:"currency"`
 		MonthlyTotal float64 `json:"monthlyTotal"`
 		LineItems    []struct {
 			SKUDescription string  `json:"skuDescription"`

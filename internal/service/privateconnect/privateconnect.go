@@ -24,22 +24,22 @@ func init() {
 }
 
 type serviceAttachment struct {
-	Name               string   `json:"name"`
-	TargetService      string   `json:"targetService,omitempty"`
-	ConnectionPreference string `json:"connectionPreference,omitempty"`
-	ConnectedEndpoints []string `json:"connectedEndpoints,omitempty"`
+	Name                 string   `json:"name"`
+	TargetService        string   `json:"targetService,omitempty"`
+	ConnectionPreference string   `json:"connectionPreference,omitempty"`
+	ConnectedEndpoints   []string `json:"connectedEndpoints,omitempty"`
 }
 
 type endpoint struct {
-	Name              string `json:"name"`
-	Target            string `json:"target"` // service attachment name
-	PSCConnectionID   string `json:"pscConnectionId"`
-	State             string `json:"state"`
+	Name            string `json:"name"`
+	Target          string `json:"target"` // service attachment name
+	PSCConnectionID string `json:"pscConnectionId"`
+	State           string `json:"state"`
 }
 
 type state struct {
 	Attachments map[string]*serviceAttachment `json:"attachments"` // full path -> attachment
-	Endpoints   map[string]*endpoint           `json:"endpoints"`   // full path -> endpoint
+	Endpoints   map[string]*endpoint          `json:"endpoints"`   // full path -> endpoint
 }
 
 // Service implements the Private Service Connect emulation.

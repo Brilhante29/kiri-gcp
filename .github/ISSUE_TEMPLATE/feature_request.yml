@@ -1,0 +1,25 @@
+name: Feature request
+description: Ask for a new service, endpoint, or capability
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: The use case, not just the feature. What are you trying to do locally?
+    validations:
+      required: true
+  - type: input
+    id: service
+    attributes:
+      label: Service or API surface
+      placeholder: e.g. Cloud Run jobs, Spanner DML, a new SKU in the pricing catalog
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: How should it work? Link the real GCP API docs if there is a wire format to match.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

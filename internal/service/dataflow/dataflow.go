@@ -24,11 +24,11 @@ func init() {
 }
 
 type job struct {
-	ID              string `json:"id"`
-	Name            string `json:"name"`
-	Type            string `json:"type,omitempty"`
-	CurrentState    string `json:"currentState"`
-	Environment     map[string]any `json:"environment,omitempty"`
+	ID           string         `json:"id"`
+	Name         string         `json:"name"`
+	Type         string         `json:"type,omitempty"`
+	CurrentState string         `json:"currentState"`
+	Environment  map[string]any `json:"environment,omitempty"`
 }
 
 type state struct {

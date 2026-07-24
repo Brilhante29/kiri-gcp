@@ -23,8 +23,8 @@ func init() {
 }
 
 type errorEvent struct {
-	Message     string         `json:"message"`
-	EventTime   string         `json:"eventTime"`
+	Message        string         `json:"message"`
+	EventTime      string         `json:"eventTime"`
 	ServiceContext map[string]any `json:"serviceContext,omitempty"`
 }
 

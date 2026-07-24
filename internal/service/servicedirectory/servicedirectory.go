@@ -32,14 +32,14 @@ type endpoint struct {
 }
 
 type svcEntry struct {
-	Name      string            `json:"name"` // .../namespaces/{n}/services/{s}
-	Metadata  map[string]string `json:"metadata,omitempty"`
+	Name      string               `json:"name"` // .../namespaces/{n}/services/{s}
+	Metadata  map[string]string    `json:"metadata,omitempty"`
 	Endpoints map[string]*endpoint `json:"endpoints"` // endpoint name -> endpoint
 }
 
 type namespace struct {
-	Name     string              `json:"name"` // projects/{p}/locations/{l}/namespaces/{n}
-	Labels   map[string]string   `json:"labels,omitempty"`
+	Name     string               `json:"name"` // projects/{p}/locations/{l}/namespaces/{n}
+	Labels   map[string]string    `json:"labels,omitempty"`
 	Services map[string]*svcEntry `json:"services"` // service name -> service
 }
 

@@ -35,16 +35,16 @@ type targetHTTPProxy struct {
 }
 
 type forwardingRule struct {
-	Name       string `json:"name"`
-	Target     string `json:"target,omitempty"`
-	IPAddress  string `json:"IPAddress"`
-	PortRange  string `json:"portRange,omitempty"`
+	Name      string `json:"name"`
+	Target    string `json:"target,omitempty"`
+	IPAddress string `json:"IPAddress"`
+	PortRange string `json:"portRange,omitempty"`
 }
 
 type state struct {
-	URLMaps          map[string]*urlMap          `json:"urlMaps"`
+	URLMaps           map[string]*urlMap          `json:"urlMaps"`
 	TargetHTTPProxies map[string]*targetHTTPProxy `json:"targetHttpProxies"`
-	ForwardingRules  map[string]*forwardingRule  `json:"forwardingRules"`
+	ForwardingRules   map[string]*forwardingRule  `json:"forwardingRules"`
 }
 
 // Service implements the global load balancing emulation.

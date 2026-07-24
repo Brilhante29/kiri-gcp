@@ -1,0 +1,30 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: none
+  enable:
+    - bodyclose
+    - errcheck
+    - govet
+    - ineffassign
+    - misspell
+    - staticcheck
+    - unconvert
+    - unused
+    - whitespace
+  exclusions:
+    rules:
+      # Tests are allowed to be loose about response bodies and error returns.
+      - path: _test\.go
+        linters:
+          - bodyclose
+          - errcheck
+          - unused
+
+formatters:
+  enable:
+    - gofmt
+    - goimports

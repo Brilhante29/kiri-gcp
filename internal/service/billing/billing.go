@@ -608,25 +608,25 @@ func (s *Service) seedCost(w http.ResponseWriter, r *http.Request) {
 // ---- GCP Price Calculator Surface ----
 
 type calculatorItem struct {
-	Service              string  `json:"service"`              // "compute" | "gcs" | "bigquery" | "pubsub" | "cloudrun" | "cloudrunjobs" | "vertexai"
-	MachineType          string  `json:"machineType"`          // e.g. "n1-standard-1", "e2-standard-4"
-	Instances            int     `json:"instances"`            // number of instances (default 1)
-	VCPUs                float64 `json:"vcpus"`                // total vCPUs if custom spec (e.g. 4)
-	MemoryGiB            float64 `json:"memoryGiB"`            // total memory in GiB (e.g. 7.0)
-	StorageGiB           float64 `json:"storageGiB"`           // persistent storage in GiB
-	StorageClass         string  `json:"storageClass"`         // "standard" | "nearline" | "coldline" | "archive"
-	HoursPerMonth        float64 `json:"hoursPerMonth"`        // total runtime hours per month (default 730 if unset)
-	DailyOnHours         float64 `json:"dailyOnHours"`         // hours ON per day (e.g. 9.0 -> 270h/mo)
-	QueriesTiB           float64 `json:"queriesTiB"`           // BigQuery query volume in TiB
-	IngestionGiB         float64 `json:"ingestionGiB"`         // Pub/Sub or log volume in GiB
-	RequestsCount        float64 `json:"requestsCount"`        // Invocations or HTTP requests
-	ExecutionSeconds     float64 `json:"executionSeconds"`     // Cloud Run Jobs total task execution duration in seconds
-	TaskCount            int     `json:"taskCount"`            // Cloud Run Jobs number of task runs
-	TaskDurationSeconds  float64 `json:"taskDurationSeconds"`  // Duration per task run in seconds
-	NodeHours            float64 `json:"nodeHours"`            // Vertex AI training node hours
-	GPUCount             int     `json:"gpuCount"`             // Vertex AI GPUs
-	InputTokens          float64 `json:"inputTokens"`          // Vertex AI LLM input tokens (in thousands)
-	OutputTokens         float64 `json:"outputTokens"`         // Vertex AI LLM output tokens (in thousands)
+	Service             string  `json:"service"`             // "compute" | "gcs" | "bigquery" | "pubsub" | "cloudrun" | "cloudrunjobs" | "vertexai"
+	MachineType         string  `json:"machineType"`         // e.g. "n1-standard-1", "e2-standard-4"
+	Instances           int     `json:"instances"`           // number of instances (default 1)
+	VCPUs               float64 `json:"vcpus"`               // total vCPUs if custom spec (e.g. 4)
+	MemoryGiB           float64 `json:"memoryGiB"`           // total memory in GiB (e.g. 7.0)
+	StorageGiB          float64 `json:"storageGiB"`          // persistent storage in GiB
+	StorageClass        string  `json:"storageClass"`        // "standard" | "nearline" | "coldline" | "archive"
+	HoursPerMonth       float64 `json:"hoursPerMonth"`       // total runtime hours per month (default 730 if unset)
+	DailyOnHours        float64 `json:"dailyOnHours"`        // hours ON per day (e.g. 9.0 -> 270h/mo)
+	QueriesTiB          float64 `json:"queriesTiB"`          // BigQuery query volume in TiB
+	IngestionGiB        float64 `json:"ingestionGiB"`        // Pub/Sub or log volume in GiB
+	RequestsCount       float64 `json:"requestsCount"`       // Invocations or HTTP requests
+	ExecutionSeconds    float64 `json:"executionSeconds"`    // Cloud Run Jobs total task execution duration in seconds
+	TaskCount           int     `json:"taskCount"`           // Cloud Run Jobs number of task runs
+	TaskDurationSeconds float64 `json:"taskDurationSeconds"` // Duration per task run in seconds
+	NodeHours           float64 `json:"nodeHours"`           // Vertex AI training node hours
+	GPUCount            int     `json:"gpuCount"`            // Vertex AI GPUs
+	InputTokens         float64 `json:"inputTokens"`         // Vertex AI LLM input tokens (in thousands)
+	OutputTokens        float64 `json:"outputTokens"`        // Vertex AI LLM output tokens (in thousands)
 }
 
 type calculatorLineItem struct {

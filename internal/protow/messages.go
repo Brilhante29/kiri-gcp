@@ -113,9 +113,9 @@ func (m *PublishResponse) Encode() []byte {
 
 // PullRequest: 1=subscription (string), 2=maxMessages (int32), 3=returnImmediately (bool)
 type PullRequest struct {
-	Subscription       string
-	MaxMessages        int32
-	ReturnImmediately  bool
+	Subscription      string
+	MaxMessages       int32
+	ReturnImmediately bool
 }
 
 func (m *PullRequest) Encode() []byte {

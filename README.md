@@ -20,7 +20,7 @@ without a project, a credential, or a bill.
 - **108 GCP Services in 1 Binary:** Cloud Storage, Pub/Sub, Firestore, BigQuery, Cloud Run, Secret Manager, IAM, KMS, Spanner, GKE, Cloud SQL, and 97 more.
 - **Zero Credentials Needed:** Runs in zero-auth mode locally. Override endpoints without service accounts, IAM keys, or cloud billing accounts.
 - **Multi-Protocol Support:** Dual REST/JSON (`:4443`) and native gRPC (`:8085`) transports compatible with official Google Cloud SDKs.
-- **Integrated Cost Calculator Surface:** Includes `/kiri/billing/calculator` and `/kiri/billing/cost` endpoints to simulate exact monthly GCP bills and price cloud architectures locally.
+- **Integrated Cost Surface:** A pricing catalog plus `/kiri/billing/cost` and `/kiri/billing/seed` endpoints to project monthly GCP bills and price cloud architectures locally, the Cost Explorer analogue.
 - **In-Process Go Testing:** Import `github.com/kiri-dev/kiri` directly in your Go test suite using `kiri.NewServer()` for lightning-fast, isolated unit/integration tests without external dependencies.
 - **Optional Data Persistence:** Configure `$KIRI_DATA_DIR` to save and restore local emulator states across container restarts.
 
@@ -154,42 +154,47 @@ gcloud config set api_endpoint_overrides/storage http://localhost:4443/
 
 ---
 
-## 💰 Price Projection & Cost Calculator
+## 💰 Cost surface (Cost Explorer analogue)
 
-`kiri` carries an integrated Cost Engine that mirrors official GCP SKU pricing. You can calculate estimated monthly costs for any planned GCP architecture directly from your local terminal.
+`kiri` carries a pricing catalog (Compute, Storage, BigQuery SKUs) and a cost
+query so you can project what a GCP architecture would cost, locally. Seed cost
+line items, then query them grouped by service, SKU, or project over a window.
+
+Seed usage:
 
 ```bash
-curl -X POST http://localhost:4443/kiri/billing/calculator \
+curl -X POST http://localhost:4443/kiri/billing/seed \
   -H "Content-Type: application/json" \
-  -d '{
-    "resources": [
-      {
-        "service": "cloudrun",
-        "requestsPerMonth": 5000000,
-        "cpu": 2.0,
-        "memoryGb": 4.0,
-        "executionTimeMs": 250
-      },
-      {
-        "service": "firestore",
-        "readsPerDay": 100000,
-        "writesPerDay": 50000,
-        "storageGb": 25.0
-      }
-    ]
-  }'
+  -d '[
+    {"service":"Compute Engine","sku":"N1 Predefined vCPU running","project":"my-project","cost":46.15,"usageStart":"2026-07-01","usageEnd":"2026-08-01"},
+    {"service":"Cloud Storage","sku":"Standard Storage US","project":"my-project","cost":0.10,"usageStart":"2026-07-01","usageEnd":"2026-08-01"}
+  ]'
+```
+
+Query the cost, grouped by service:
+
+```bash
+curl -X POST http://localhost:4443/kiri/billing/cost \
+  -H "Content-Type: application/json" \
+  -d '{"groupBy":"service"}'
 ```
 
 **Response:**
 ```json
 {
-  "totalMonthlyEstimatedUSD": 42.18,
-  "breakdown": [
-    { "service": "Cloud Run", "costUSD": 28.50 },
-    { "service": "Firestore", "costUSD": 13.68 }
+  "groupBy": "service",
+  "currency": "USD",
+  "total": 46.25,
+  "groups": [
+    { "key": "Cloud Storage", "cost": 0.10, "currency": "USD" },
+    { "key": "Compute Engine", "cost": 46.15, "currency": "USD" }
   ]
 }
 ```
+
+For a full end-to-end example that provisions real resources through the Google
+SDKs and projects their monthly cost, see
+[`examples/scenario`](examples/scenario).
 
 ---
 

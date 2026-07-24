@@ -34,10 +34,10 @@ type googleError struct {
 }
 
 type googleErrorBody struct {
-	Code    int                `json:"code"`
-	Message string             `json:"message"`
-	Status  string             `json:"status"`
-	Errors  []googleErrorItem  `json:"errors,omitempty"`
+	Code    int               `json:"code"`
+	Message string            `json:"message"`
+	Status  string            `json:"status"`
+	Errors  []googleErrorItem `json:"errors,omitempty"`
 }
 
 type googleErrorItem struct {

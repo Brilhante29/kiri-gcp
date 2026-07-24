@@ -32,7 +32,7 @@ func New() *Service {
 	s := &Service{
 		st: state{Documents: make(map[string]*Document)},
 	}
-	storage.Load(serviceName, "state", &s.st)
+	_ = storage.Load(serviceName, "state", &s.st)
 	if s.st.Documents == nil {
 		s.st.Documents = make(map[string]*Document)
 	}
@@ -71,7 +71,7 @@ func (s *Service) getDoc(w http.ResponseWriter, r *http.Request) {
 	name := "projects/" + project + "/databases/" + db + "/documents/" + coll + "/" + docID
 
 	if doc, ok := s.st.Documents[name]; ok {
-		json.NewEncoder(w).Encode(doc)
+		_ = json.NewEncoder(w).Encode(doc)
 		return
 	}
 	w.WriteHeader(http.StatusNotFound)
@@ -94,7 +94,7 @@ func (s *Service) createDoc(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Document Document `json:"document"`
 	}
-	json.NewDecoder(r.Body).Decode(&req)
+	_ = json.NewDecoder(r.Body).Decode(&req)
 
 	req.Document.Name = name
 	if req.Document.Fields == nil {
@@ -102,7 +102,7 @@ func (s *Service) createDoc(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.st.Documents[name] = &req.Document
-	json.NewEncoder(w).Encode(req.Document)
+	_ = json.NewEncoder(w).Encode(req.Document)
 }
 
 func (s *Service) listDocs(w http.ResponseWriter, r *http.Request) {
@@ -120,7 +120,7 @@ func (s *Service) listDocs(w http.ResponseWriter, r *http.Request) {
 			docs = append(docs, *v)
 		}
 	}
-	json.NewEncoder(w).Encode(map[string]any{"documents": docs})
+	_ = json.NewEncoder(w).Encode(map[string]any{"documents": docs})
 }
 
 func (s *Service) patchDoc(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +136,7 @@ func (s *Service) patchDoc(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Document Document `json:"document"`
 	}
-	json.NewDecoder(r.Body).Decode(&req)
+	_ = json.NewDecoder(r.Body).Decode(&req)
 
 	doc, ok := s.st.Documents[name]
 	if !ok {
@@ -148,7 +148,7 @@ func (s *Service) patchDoc(w http.ResponseWriter, r *http.Request) {
 			doc.Fields[k] = v
 		}
 	}
-	json.NewEncoder(w).Encode(doc)
+	_ = json.NewEncoder(w).Encode(doc)
 }
 
 func (s *Service) deleteDoc(w http.ResponseWriter, r *http.Request) {
@@ -166,9 +166,9 @@ func (s *Service) deleteDoc(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Service) beginTx(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(map[string]any{"transaction": "tx-123"})
+	_ = json.NewEncoder(w).Encode(map[string]any{"transaction": "tx-123"})
 }
 
 func (s *Service) commit(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode(map[string]any{})
+	_ = json.NewEncoder(w).Encode(map[string]any{})
 }

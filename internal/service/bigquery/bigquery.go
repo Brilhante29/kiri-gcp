@@ -17,20 +17,20 @@ const serviceName = "bigquery"
 func init() { service.Register(New()) }
 
 type dataset struct {
-	Kind         string `json:"kind"`
-	ID           string `json:"id"`
+	Kind             string            `json:"kind"`
+	ID               string            `json:"id"`
 	DatasetReference map[string]string `json:"datasetReference"`
-	Location     string `json:"location"`
-	CreationTime string `json:"creationTime"`
+	Location         string            `json:"location"`
+	CreationTime     string            `json:"creationTime"`
 }
 
 type table struct {
-	Kind           string `json:"kind"`
-	ID             string `json:"id"`
+	Kind           string            `json:"kind"`
+	ID             string            `json:"id"`
 	TableReference map[string]string `json:"tableReference"`
-	CreationTime   string `json:"creationTime"`
-	NumRows        string `json:"numRows"`
-	NumBytes       string `json:"numBytes"`
+	CreationTime   string            `json:"creationTime"`
+	NumRows        string            `json:"numRows"`
+	NumBytes       string            `json:"numBytes"`
 }
 
 type state struct {
@@ -50,7 +50,7 @@ func New() *Service {
 			Tables:   make(map[string]*table),
 		},
 	}
-	storage.Load(serviceName, "state", &s.st)
+	_ = storage.Load(serviceName, "state", &s.st)
 	if s.st.Datasets == nil {
 		s.st.Datasets = make(map[string]*dataset)
 	}
@@ -312,7 +312,7 @@ func (s *Service) query(w http.ResponseWriter, r *http.Request) {
 			"projectId": project,
 			"jobId":     jobID,
 		},
-		"jobComplete":     true,
+		"jobComplete":         true,
 		"totalBytesProcessed": "1024",
 		"schema": map[string]any{
 			"fields": []map[string]string{
