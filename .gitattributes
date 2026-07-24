@@ -1,0 +1,17 @@
+# Normalize line endings to LF in the repo across platforms.
+* text=auto eol=lf
+
+*.go   text eol=lf
+*.mod  text eol=lf
+*.sum  text eol=lf
+*.sh   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.md   text eol=lf
+
+# Binary assets: never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
