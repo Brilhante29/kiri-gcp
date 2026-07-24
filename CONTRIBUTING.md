@@ -33,7 +33,7 @@ Docker is the only requirement (no local Go toolchain needed):
 
 ```bash
 # vet + test
-docker run --rm -v "$PWD":/app -w /app golang:1.23-alpine \
+docker run --rm -v "$PWD":/app -w /app golang:1.25-alpine \
   sh -c "go vet ./... && go test ./internal/..."
 
 # build the image
