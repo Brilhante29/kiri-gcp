@@ -9,7 +9,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/kiri-dev/kiri/internal/service"
+	"github.com/Brilhante29/kiri/internal/service"
 )
 
 // CategoryOrder defines the section order of the generated catalog. Every

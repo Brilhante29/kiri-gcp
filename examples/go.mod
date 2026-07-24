@@ -1,14 +1,14 @@
 // One module for every runnable example. Kept separate from the root module so
 // the emulator itself stays free of the heavy Google SDK dependency tree; the
 // examples pull those SDKs to prove kiri is a drop-in target.
-module github.com/kiri-dev/kiri/examples
+module github.com/Brilhante29/kiri/examples
 
 go 1.25.0
 
 require (
 	cloud.google.com/go/pubsub v1.51.0
 	cloud.google.com/go/storage v1.64.0
-	github.com/kiri-dev/kiri v0.0.0
+	github.com/Brilhante29/kiri v0.0.0
 	google.golang.org/api v0.287.1
 )
 
@@ -62,4 +62,4 @@ require (
 	google.golang.org/protobuf v1.36.11 // indirect
 )
 
-replace github.com/kiri-dev/kiri => ../
+replace github.com/Brilhante29/kiri => ../

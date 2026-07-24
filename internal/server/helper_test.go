@@ -3,7 +3,7 @@ package server_test
 import (
 	"testing"
 
-	kiri "github.com/kiri-dev/kiri"
+	kiri "github.com/Brilhante29/kiri"
 )
 
 // kiriNewServer starts a fresh in-process emulator for testing.

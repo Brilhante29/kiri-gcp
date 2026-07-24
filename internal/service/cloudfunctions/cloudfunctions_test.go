@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/kiri-dev/kiri/internal/server"
-	"github.com/kiri-dev/kiri/internal/service/cloudfunctions"
+	"github.com/Brilhante29/kiri/internal/server"
+	"github.com/Brilhante29/kiri/internal/service/cloudfunctions"
 )
 
 func TestCloudFunctionsService(t *testing.T) {

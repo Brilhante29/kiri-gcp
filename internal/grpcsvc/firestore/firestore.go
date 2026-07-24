@@ -8,7 +8,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/kiri-dev/kiri/internal/protow"
+	"github.com/Brilhante29/kiri/internal/protow"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
