@@ -92,9 +92,6 @@ func (b *MergeBackend) DeleteDocument(name string) bool {
 	return true
 }
 
-// Now returns RFC3339 timestamp. Duplicated from httpx to avoid import cycle.
-func now() string { return protow.Now() }
-
 // runUnary invokes the server-wide unary interceptor (if any) around fn,
 // matching the dispatch pattern protoc-gen-go-grpc generates. Mirrors the
 // pubsubgrpc package's helper of the same name — the same interceptor-bypass

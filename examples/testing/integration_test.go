@@ -71,20 +71,16 @@ func TestInProcessKiriServer(t *testing.T) {
 	}
 	t.Log("✓ Successfully validated GCS bucket write/read against in-process kiri server")
 
-	// 4. Test Cost Calculator Endpoint
-	calcBody := []byte(`{
-		"resources": [
-			{"service": "cloudrun", "requestsPerMonth": 1000000, "cpu": 1.0, "memoryGb": 1.0}
-		]
-	}`)
-	resp, err := http.Post(srv.URL+"/kiri/billing/calculator", "application/json", bytes.NewReader(calcBody))
+	// 4. Test the Cost surface (Cost Explorer analogue).
+	costBody := []byte(`{"groupBy":"service"}`)
+	resp, err := http.Post(srv.URL+"/kiri/billing/cost", "application/json", bytes.NewReader(costBody))
 	if err != nil {
-		t.Fatalf("failed to call cost calculator: %v", err)
+		t.Fatalf("failed to call cost query: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		t.Errorf("expected 200 OK from cost calculator, got %d", resp.StatusCode)
+		t.Errorf("expected 200 OK from cost query, got %d", resp.StatusCode)
 	}
-	t.Log("✓ Validated cost calculator endpoint on in-process kiri server")
+	t.Log("✓ Validated cost query endpoint on in-process kiri server")
 }

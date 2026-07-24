@@ -18,15 +18,15 @@ const serviceName = "kms"
 func init() { service.Register(New()) }
 
 type keyRing struct {
-	Name       string   `json:"name"`
-	CreateTime string   `json:"createTime"`
+	Name       string `json:"name"`
+	CreateTime string `json:"createTime"`
 }
 
 type cryptoKey struct {
-	Name            string `json:"name"`
-	Purpose         string `json:"purpose"`
-	CreateTime      string `json:"createTime"`
-	PrimaryVersion  string `json:"primary"`
+	Name           string `json:"name"`
+	Purpose        string `json:"purpose"`
+	CreateTime     string `json:"createTime"`
+	PrimaryVersion string `json:"primary"`
 }
 
 type state struct {
@@ -46,7 +46,7 @@ func New() *Service {
 			CryptoKeys: make(map[string]*cryptoKey),
 		},
 	}
-	storage.Load(serviceName, "state", &s.st)
+	_ = storage.Load(serviceName, "state", &s.st)
 	if s.st.KeyRings == nil {
 		s.st.KeyRings = make(map[string]*keyRing)
 	}
@@ -291,4 +291,3 @@ func (s *Service) createCryptoKeyVersion(w http.ResponseWriter, r *http.Request)
 		"state": "ENABLED",
 	})
 }
-

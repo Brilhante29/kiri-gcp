@@ -30,10 +30,10 @@ type build struct {
 }
 
 type trigger struct {
-	ID          string           `json:"id"`
-	Name        string           `json:"name,omitempty"`
-	Description string           `json:"description,omitempty"`
-	Build       map[string]any   `json:"build,omitempty"`
+	ID          string         `json:"id"`
+	Name        string         `json:"name,omitempty"`
+	Description string         `json:"description,omitempty"`
+	Build       map[string]any `json:"build,omitempty"`
 }
 
 type state struct {

@@ -36,7 +36,7 @@ type job struct {
 
 type state struct {
 	Clusters map[string]*cluster `json:"clusters"` // full path -> cluster
-	Jobs     map[string]*job     `json:"jobs"`      // full path -> job
+	Jobs     map[string]*job     `json:"jobs"`     // full path -> job
 }
 
 // Service implements the Dataproc emulation.

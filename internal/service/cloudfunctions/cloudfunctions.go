@@ -17,14 +17,14 @@ const serviceName = "cloudfunctions"
 func init() { service.Register(New()) }
 
 type cloudFunction struct {
-	Name        string            `json:"name"`
-	Description string            `json:"description,omitempty"`
-	Status      string            `json:"status"`
-	EntryPoint  string            `json:"entryPoint,omitempty"`
-	Runtime     string            `json:"runtime,omitempty"`
-	Timeout     string            `json:"timeout,omitempty"`
+	Name         string            `json:"name"`
+	Description  string            `json:"description,omitempty"`
+	Status       string            `json:"status"`
+	EntryPoint   string            `json:"entryPoint,omitempty"`
+	Runtime      string            `json:"runtime,omitempty"`
+	Timeout      string            `json:"timeout,omitempty"`
 	HttpsTrigger map[string]string `json:"httpsTrigger,omitempty"`
-	UpdateTime  string            `json:"updateTime"`
+	UpdateTime   string            `json:"updateTime"`
 }
 
 type state struct {
@@ -38,7 +38,7 @@ type Service struct {
 
 func New() *Service {
 	s := &Service{st: state{Functions: make(map[string]*cloudFunction)}}
-	storage.Load(serviceName, "state", &s.st)
+	_ = storage.Load(serviceName, "state", &s.st)
 	if s.st.Functions == nil {
 		s.st.Functions = make(map[string]*cloudFunction)
 	}

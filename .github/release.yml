@@ -1,0 +1,19 @@
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      - dependabot
+  categories:
+    - title: Breaking changes
+      labels: [breaking]
+    - title: New services & features
+      labels: [feature, service, enhancement]
+    - title: Bug fixes
+      labels: [bug, fix]
+    - title: Documentation
+      labels: [docs, documentation]
+    - title: Dependencies
+      labels: [dependencies]
+    - title: Other changes
+      labels: ["*"]

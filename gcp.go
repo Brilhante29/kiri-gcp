@@ -53,14 +53,14 @@ func NewServer() *Server {
 	// Start gRPC and wait for it to bind the random port.
 	grpcReady := make(chan struct{})
 	go func() {
-		internal.GRPCStart(grpcReady)
+		_ = internal.GRPCStart(grpcReady)
 	}()
 
 	<-grpcReady
 
 	return &Server{
-		URL:      ts.URL,
-		GRPCURL:  internal.GRPCAddr(),
+		URL:        ts.URL,
+		GRPCURL:    internal.GRPCAddr(),
 		httpServer: ts,
 		internal:   internal,
 	}

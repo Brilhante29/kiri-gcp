@@ -28,11 +28,11 @@ type database struct {
 }
 
 type instance struct {
-	Name        string               `json:"name"`
-	Config      string               `json:"config,omitempty"`
-	NodeCount   int                  `json:"nodeCount,omitempty"`
-	State       string               `json:"state"`
-	Databases   map[string]*database `json:"databases"`
+	Name      string               `json:"name"`
+	Config    string               `json:"config,omitempty"`
+	NodeCount int                  `json:"nodeCount,omitempty"`
+	State     string               `json:"state"`
+	Databases map[string]*database `json:"databases"`
 }
 
 type state struct {

@@ -24,9 +24,9 @@ func init() {
 }
 
 type version struct {
-	ID          string `json:"id"`
+	ID            string `json:"id"`
 	ServingStatus string `json:"servingStatus"`
-	Runtime     string `json:"runtime,omitempty"`
+	Runtime       string `json:"runtime,omitempty"`
 }
 
 type appService struct {

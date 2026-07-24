@@ -35,8 +35,8 @@ type instance struct {
 }
 
 type cluster struct {
-	Name      string                `json:"name"`
-	State     string                `json:"state"`
+	Name      string               `json:"name"`
+	State     string               `json:"state"`
 	Instances map[string]*instance `json:"instances"`
 }
 

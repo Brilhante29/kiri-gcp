@@ -29,7 +29,7 @@ type attestor struct {
 }
 
 type policy struct {
-	Name             string           `json:"name"`
+	Name                 string         `json:"name"`
 	DefaultAdmissionRule map[string]any `json:"defaultAdmissionRule,omitempty"`
 }
 

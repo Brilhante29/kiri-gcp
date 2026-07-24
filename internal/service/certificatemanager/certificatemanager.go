@@ -23,9 +23,9 @@ func init() {
 }
 
 type certificate struct {
-	Name          string   `json:"name"`
-	SANDnsnames   []string `json:"sanDnsnames,omitempty"`
-	PemCertificate string  `json:"pemCertificate,omitempty"`
+	Name           string   `json:"name"`
+	SANDnsnames    []string `json:"sanDnsnames,omitempty"`
+	PemCertificate string   `json:"pemCertificate,omitempty"`
 }
 
 type state struct {

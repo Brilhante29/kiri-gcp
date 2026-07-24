@@ -1,0 +1,60 @@
+name: Bug report
+description: Something in kiri does not behave like real GCP or the docs say
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve kiri. Please fill in what you can.
+  - type: input
+    id: service
+    attributes:
+      label: Service
+      description: Which GCP service or endpoint is affected?
+      placeholder: Cloud Storage, Pub/Sub, /kiri/billing/cost, ...
+    validations:
+      required: true
+  - type: dropdown
+    id: client
+    attributes:
+      label: How are you connecting?
+      options:
+        - Go SDK
+        - Python SDK
+        - Node.js SDK
+        - Java SDK
+        - gcloud CLI
+        - Terraform
+        - REST / curl
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      description: What would real GCP (or the docs) do here?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead?
+      description: Include the error and, if useful, the HTTP status / gRPC code.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: A minimal snippet or curl command is ideal.
+      render: shell
+  - type: input
+    id: version
+    attributes:
+      label: kiri version / image
+      placeholder: commit SHA, tag, or "built from main"
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: OS, Docker version, Go version if building from source.

@@ -29,9 +29,9 @@ type healthCheck struct {
 }
 
 type backendService struct {
-	Name         string   `json:"name"`
-	Protocol     string   `json:"protocol,omitempty"`
-	HealthChecks []string `json:"healthChecks,omitempty"`
+	Name         string           `json:"name"`
+	Protocol     string           `json:"protocol,omitempty"`
+	HealthChecks []string         `json:"healthChecks,omitempty"`
 	Backends     []map[string]any `json:"backends,omitempty"`
 }
 

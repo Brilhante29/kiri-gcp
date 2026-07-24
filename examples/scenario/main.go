@@ -412,12 +412,12 @@ func envOr(k, d string) string {
 }
 
 func round2(f float64) float64 { return float64(int64(f*100+0.5)) / 100 }
-func nearly(a, b float64) bool  { d := a - b; return d < 0.02 && d > -0.02 }
+func nearly(a, b float64) bool { d := a - b; return d < 0.02 && d > -0.02 }
 
 func banner(s string) { fmt.Printf("======== %s ========\n", s) }
 func step(s string)   { fmt.Printf("\n── STEP %s\n", s) }
 
-func ok(f string, a ...any)  { fmt.Printf("   ✓ "+f+"\n", a...) }
+func ok(f string, a ...any) { fmt.Printf("   ✓ "+f+"\n", a...) }
 func fail(f string, a ...any) {
 	failures++
 	fmt.Printf("   ✗ "+f+"\n", a...)

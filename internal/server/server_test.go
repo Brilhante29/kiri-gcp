@@ -7,9 +7,9 @@ import (
 	"testing"
 
 	"github.com/kiri-dev/kiri/internal/catalog"
-	"github.com/kiri-dev/kiri/internal/service"
-	// Side-effect imports register services for the catalog sanity check.
+	// Side-effect import registers services for the catalog sanity check.
 	_ "github.com/kiri-dev/kiri/internal/registry"
+	"github.com/kiri-dev/kiri/internal/service"
 )
 
 // TestRootHandler hits the "/" health endpoint of the in-process server and

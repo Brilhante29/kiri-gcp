@@ -21,10 +21,10 @@ import (
 	firestoregrpc "github.com/kiri-dev/kiri/internal/grpcsvc/firestore"
 	pubsubgrpc "github.com/kiri-dev/kiri/internal/grpcsvc/pubsub"
 
+	"github.com/kiri-dev/kiri/internal/service"
 	cloudschedulerpkg "github.com/kiri-dev/kiri/internal/service/cloudscheduler"
 	gcspkg "github.com/kiri-dev/kiri/internal/service/gcs"
 	pubsubpkg "github.com/kiri-dev/kiri/internal/service/pubsub"
-	"github.com/kiri-dev/kiri/internal/service"
 )
 
 // Config holds the server configuration.
@@ -208,7 +208,7 @@ func matchState(svc service.Service, filter string) bool {
 func (s *Server) handleRoot(w http.ResponseWriter, _ *http.Request) {
 	names := s.registry.Names()
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	fmt.Fprintf(w, `{"emulator":"kiri","status":"ok","services":%d,"grpc_port":%d}`, len(names), s.config.GRPCPort)
+	_, _ = fmt.Fprintf(w, `{"emulator":"kiri","status":"ok","services":%d,"grpc_port":%d}`, len(names), s.config.GRPCPort)
 }
 
 // Handler returns the composed HTTP handler (logging + router) for in-process

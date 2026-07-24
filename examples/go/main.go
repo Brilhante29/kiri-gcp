@@ -60,20 +60,15 @@ func main() {
 	content, _ := io.ReadAll(reader)
 	fmt.Printf("✓ Read object content: %s\n", string(content))
 
-	// 2. Query kiri Price Calculator
-	calcPayload := []byte(`{
-		"resources": [
-			{"service": "cloudrun", "requestsPerMonth": 2000000, "cpu": 1.0, "memoryGb": 2.0},
-			{"service": "storage", "storageGb": 50.0}
-		]
-	}`)
+	// 2. Query kiri's Cost surface (the Cost Explorer analogue), grouped by service.
+	costPayload := []byte(`{"groupBy":"service"}`)
 
-	resp, err := http.Post(kiriHTTP+"/kiri/billing/calculator", "application/json", bytes.NewReader(calcPayload))
+	resp, err := http.Post(kiriHTTP+"/kiri/billing/cost", "application/json", bytes.NewReader(costPayload))
 	if err != nil {
-		log.Fatalf("failed to query cost calculator: %v", err)
+		log.Fatalf("failed to query cost: %v", err)
 	}
 	defer resp.Body.Close()
 
-	calcResp, _ := io.ReadAll(resp.Body)
-	fmt.Printf("✓ Calculated monthly architecture cost:\n%s\n", string(calcResp))
+	costResp, _ := io.ReadAll(resp.Body)
+	fmt.Printf("✓ Cost query (grouped by service):\n%s\n", string(costResp))
 }

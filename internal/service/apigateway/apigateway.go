@@ -34,9 +34,9 @@ type api struct {
 }
 
 type gateway struct {
-	Name      string `json:"name"`
-	APIConfig string `json:"apiConfig"`
-	State     string `json:"state"`
+	Name            string `json:"name"`
+	APIConfig       string `json:"apiConfig"`
+	State           string `json:"state"`
 	DefaultHostname string `json:"defaultHostname"`
 }
 

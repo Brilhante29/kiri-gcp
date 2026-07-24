@@ -23,14 +23,14 @@ func init() {
 }
 
 type metricDescriptor struct {
-	Name        string `json:"name"`
-	Type        string `json:"type,omitempty"`
-	MetricKind  string `json:"metricKind,omitempty"`
-	ValueType   string `json:"valueType,omitempty"`
+	Name       string `json:"name"`
+	Type       string `json:"type,omitempty"`
+	MetricKind string `json:"metricKind,omitempty"`
+	ValueType  string `json:"valueType,omitempty"`
 }
 
 type timeSeriesPoint struct {
-	Metric map[string]any `json:"metric"`
+	Metric map[string]any   `json:"metric"`
 	Points []map[string]any `json:"points"`
 }
 
@@ -42,8 +42,8 @@ type alertPolicy struct {
 
 type state struct {
 	Descriptors map[string]*metricDescriptor `json:"descriptors"` // full path -> descriptor
-	TimeSeries  []*timeSeriesPoint            `json:"timeSeries"`
-	Alerts      map[string]*alertPolicy       `json:"alerts"` // full path -> policy
+	TimeSeries  []*timeSeriesPoint           `json:"timeSeries"`
+	Alerts      map[string]*alertPolicy      `json:"alerts"` // full path -> policy
 }
 
 // Service implements the Cloud Monitoring emulation.

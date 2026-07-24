@@ -28,7 +28,7 @@ func New() *Service {
 	s := &Service{
 		st: state{Resources: make(map[string]any)},
 	}
-	storage.Load(serviceName, "state", &s.st)
+	_ = storage.Load(serviceName, "state", &s.st)
 	return s
 }
 

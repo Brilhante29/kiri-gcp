@@ -31,11 +31,9 @@ func (r *Router) Handle(method, pattern string, handler http.HandlerFunc) {
 	}
 
 	r.registered[key] = true
-	defer func() {
-		if err := recover(); err != nil {
-			// ignore invalid routes for now
-		}
-	}()
+	// ServeMux panics on a malformed pattern; swallow it so one bad route
+	// cannot take down registration of everything else.
+	defer func() { _ = recover() }()
 	r.mux.HandleFunc(key, handler)
 }
 

@@ -23,7 +23,7 @@ func init() {
 }
 
 type table struct {
-	Name            string                    `json:"name"`
+	Name           string                    `json:"name"`
 	ColumnFamilies map[string]map[string]any `json:"columnFamilies,omitempty"`
 }
 

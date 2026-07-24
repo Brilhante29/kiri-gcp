@@ -23,15 +23,15 @@ func init() {
 }
 
 type trigger struct {
-	Name            string           `json:"name"`
-	UID             string           `json:"uid"`
-	EventFilters    []map[string]any `json:"eventFilters,omitempty"`
-	Destination     map[string]any   `json:"destination,omitempty"`
+	Name         string           `json:"name"`
+	UID          string           `json:"uid"`
+	EventFilters []map[string]any `json:"eventFilters,omitempty"`
+	Destination  map[string]any   `json:"destination,omitempty"`
 }
 
 type channel struct {
-	Name string `json:"name"`
-	UID  string `json:"uid"`
+	Name  string `json:"name"`
+	UID   string `json:"uid"`
 	State string `json:"state"`
 }
 
