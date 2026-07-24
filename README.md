@@ -21,7 +21,7 @@ without a project, a credential, or a bill.
 - **Zero Credentials Needed:** Runs in zero-auth mode locally. Override endpoints without service accounts, IAM keys, or cloud billing accounts.
 - **Multi-Protocol Support:** Dual REST/JSON (`:4443`) and native gRPC (`:8085`) transports compatible with official Google Cloud SDKs.
 - **Integrated Cost Surface:** A pricing catalog plus `/kiri/billing/cost` and `/kiri/billing/seed` endpoints to project monthly GCP bills and price cloud architectures locally, the Cost Explorer analogue.
-- **In-Process Go Testing:** Import `github.com/kiri-dev/kiri` directly in your Go test suite using `kiri.NewServer()` for lightning-fast, isolated unit/integration tests without external dependencies.
+- **In-Process Go Testing:** Import `github.com/Brilhante29/kiri` directly in your Go test suite using `kiri.NewServer()` for lightning-fast, isolated unit/integration tests without external dependencies.
 - **Optional Data Persistence:** Configure `$KIRI_DATA_DIR` to save and restore local emulator states across container restarts.
 
 ---
@@ -30,8 +30,11 @@ without a project, a credential, or a bill.
 
 ### Option A: Run via Docker (Recommended)
 
+Build the image from source and run it:
+
 ```bash
-docker run -d -p 4443:4443 -p 8085:8085 --name kiri kiri-dev/kiri:latest
+docker build -t kiri -f docker/Dockerfile .
+docker run -d -p 4443:4443 -p 8085:8085 --name kiri kiri
 ```
 
 Verify that the emulator is running:
@@ -44,10 +47,11 @@ curl http://localhost:4443/
 ### Option B: Docker Compose
 
 ```yaml
-version: "3.8"
 services:
   kiri:
-    image: kiri-dev/kiri:latest
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     ports:
       - "4443:4443"
       - "8085:8085"
@@ -73,7 +77,7 @@ import (
     "context"
     "fmt"
     "cloud.google.com/go/storage"
-    "github.com/kiri-dev/kiri"
+    "github.com/Brilhante29/kiri"
     "google.golang.org/api/option"
 )
 

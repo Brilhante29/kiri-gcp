@@ -1,4 +1,4 @@
-module github.com/kiri-dev/kiri
+module github.com/Brilhante29/kiri
 
 go 1.23
 

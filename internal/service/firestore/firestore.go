@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/kiri-dev/kiri/internal/service"
-	"github.com/kiri-dev/kiri/internal/storage"
+	"github.com/Brilhante29/kiri/internal/service"
+	"github.com/Brilhante29/kiri/internal/storage"
 )
 
 const serviceName = "firestore"
