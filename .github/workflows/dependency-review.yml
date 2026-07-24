@@ -1,0 +1,21 @@
+name: Dependency review
+
+# Blocks a pull request that introduces a dependency with a known
+# vulnerability or a disallowed license before it can be merged.
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          comment-summary-in-pr: on-failure
