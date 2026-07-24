@@ -10,7 +10,7 @@ updates:
         patterns: ["*"]
 
   - package-ecosystem: gomod
-    directory: /examples/scenario
+    directory: /examples
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
