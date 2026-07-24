@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Brilhante29/kiri/internal/protow"
+	"github.com/Brilhante29/kiri-gcp/internal/protow"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

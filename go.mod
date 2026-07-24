@@ -1,4 +1,4 @@
-module github.com/Brilhante29/kiri
+module github.com/Brilhante29/kiri-gcp
 
 go 1.23
 

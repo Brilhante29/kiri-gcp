@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"cloud.google.com/go/storage"
-	"github.com/Brilhante29/kiri"
+	"github.com/Brilhante29/kiri-gcp"
 	"google.golang.org/api/option"
 )
 

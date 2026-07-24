@@ -18,13 +18,13 @@ import (
 	"syscall"
 	"time"
 
-	firestoregrpc "github.com/Brilhante29/kiri/internal/grpcsvc/firestore"
-	pubsubgrpc "github.com/Brilhante29/kiri/internal/grpcsvc/pubsub"
+	firestoregrpc "github.com/Brilhante29/kiri-gcp/internal/grpcsvc/firestore"
+	pubsubgrpc "github.com/Brilhante29/kiri-gcp/internal/grpcsvc/pubsub"
 
-	"github.com/Brilhante29/kiri/internal/service"
-	cloudschedulerpkg "github.com/Brilhante29/kiri/internal/service/cloudscheduler"
-	gcspkg "github.com/Brilhante29/kiri/internal/service/gcs"
-	pubsubpkg "github.com/Brilhante29/kiri/internal/service/pubsub"
+	"github.com/Brilhante29/kiri-gcp/internal/service"
+	cloudschedulerpkg "github.com/Brilhante29/kiri-gcp/internal/service/cloudscheduler"
+	gcspkg "github.com/Brilhante29/kiri-gcp/internal/service/gcs"
+	pubsubpkg "github.com/Brilhante29/kiri-gcp/internal/service/pubsub"
 )
 
 // Config holds the server configuration.

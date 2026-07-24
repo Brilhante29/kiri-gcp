@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/Brilhante29/kiri/internal/grpcutil"
+	"github.com/Brilhante29/kiri-gcp/internal/grpcutil"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )

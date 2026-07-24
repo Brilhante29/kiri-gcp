@@ -22,8 +22,8 @@ import (
 
 	// Register all services via init(). See internal/registry for the single
 	// canonical list shared with the CLI and the README generator.
-	_ "github.com/Brilhante29/kiri/internal/registry"
-	"github.com/Brilhante29/kiri/internal/server"
+	_ "github.com/Brilhante29/kiri-gcp/internal/registry"
+	"github.com/Brilhante29/kiri-gcp/internal/server"
 )
 
 // Server is an in-process GCP emulator wrapping an HTTP + gRPC server.

@@ -19,11 +19,11 @@ import (
 	"net/http"
 	"sort"
 
-	pubsubgrpc "github.com/Brilhante29/kiri/internal/grpcsvc/pubsub"
-	"github.com/Brilhante29/kiri/internal/httpx"
-	"github.com/Brilhante29/kiri/internal/protow"
-	"github.com/Brilhante29/kiri/internal/service"
-	"github.com/Brilhante29/kiri/internal/storage"
+	pubsubgrpc "github.com/Brilhante29/kiri-gcp/internal/grpcsvc/pubsub"
+	"github.com/Brilhante29/kiri-gcp/internal/httpx"
+	"github.com/Brilhante29/kiri-gcp/internal/protow"
+	"github.com/Brilhante29/kiri-gcp/internal/service"
+	"github.com/Brilhante29/kiri-gcp/internal/storage"
 )
 
 const serviceName = "pubsub"

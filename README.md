@@ -21,7 +21,7 @@ without a project, a credential, or a bill.
 - **Zero Credentials Needed:** Runs in zero-auth mode locally. Override endpoints without service accounts, IAM keys, or cloud billing accounts.
 - **Multi-Protocol Support:** Dual REST/JSON (`:4443`) and native gRPC (`:8085`) transports compatible with official Google Cloud SDKs.
 - **Integrated Cost Surface:** A pricing catalog plus `/kiri/billing/cost` and `/kiri/billing/seed` endpoints to project monthly GCP bills and price cloud architectures locally, the Cost Explorer analogue.
-- **In-Process Go Testing:** Import `github.com/Brilhante29/kiri` directly in your Go test suite using `kiri.NewServer()` for lightning-fast, isolated unit/integration tests without external dependencies.
+- **In-Process Go Testing:** Import `github.com/Brilhante29/kiri-gcp` directly in your Go test suite using `kiri.NewServer()` for lightning-fast, isolated unit/integration tests without external dependencies.
 - **Optional Data Persistence:** Configure `$KIRI_DATA_DIR` to save and restore local emulator states across container restarts.
 
 ---
@@ -77,7 +77,7 @@ import (
     "context"
     "fmt"
     "cloud.google.com/go/storage"
-    "github.com/Brilhante29/kiri"
+    "github.com/Brilhante29/kiri-gcp"
     "google.golang.org/api/option"
 )
 

@@ -7,8 +7,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Brilhante29/kiri/internal/server"
-	"github.com/Brilhante29/kiri/internal/service/billing"
+	"github.com/Brilhante29/kiri-gcp/internal/server"
+	"github.com/Brilhante29/kiri-gcp/internal/service/billing"
 )
 
 func TestBillingServicePriceCalculatorScenario(t *testing.T) {

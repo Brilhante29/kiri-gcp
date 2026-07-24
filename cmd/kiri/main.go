@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"os"
 
-	_ "github.com/Brilhante29/kiri/internal/registry" // Register all services via init().
-	"github.com/Brilhante29/kiri/internal/server"
+	_ "github.com/Brilhante29/kiri-gcp/internal/registry" // Register all services via init().
+	"github.com/Brilhante29/kiri-gcp/internal/server"
 )
 
 func main() {
