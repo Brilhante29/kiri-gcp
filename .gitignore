@@ -46,3 +46,6 @@ coverage.*
 Thumbs.db
 ehthumbs.db
 desktop.ini
+
+# graphify knowledge graph output (regenerate with: graphify update .)
+graphify-out/
