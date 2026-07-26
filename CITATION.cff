@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use kiri, please cite it as below."
+title: "kiri: a single-binary Google Cloud emulator"
+abstract: >-
+  kiri emulates 108 Google Cloud services locally from one Go binary, drop-in for
+  the Google Cloud SDKs, gcloud, and Terraform, with a Cost Explorer style surface
+  for offline architecture pricing.
+type: software
+authors:
+  - family-names: "Brilhante"
+    given-names: "Guilherme"
+    alias: Brilhante29
+version: 0.1.0
+date-released: 2026-07-26
+repository-code: "https://github.com/Brilhante29/kiri-gcp"
+url: "https://brilhante29.github.io/kiri-gcp/"
+license: MIT
+keywords:
+  - gcp
+  - google-cloud
+  - emulator
+  - testing
+  - local-development
+  - golang
