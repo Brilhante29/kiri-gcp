@@ -1,26 +1,77 @@
 version: 2
+
+# Grouped updates keep the noise down: one PR per ecosystem per week for all
+# minor/patch bumps (these are eligible for auto-merge once CI is green — see
+# .github/workflows/dependabot-auto-merge.yml), and a separate PR for
+# major-version bumps, which always require a human review.
 updates:
+  # ---- Go modules: main module ----
   - package-ecosystem: gomod
     directory: /
     schedule:
       interval: weekly
+      day: monday
     open-pull-requests-limit: 10
+    labels: ["dependencies", "go"]
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
     groups:
-      go-dependencies:
+      go-minor-patch:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
+      go-major:
+        patterns: ["*"]
+        update-types: ["major"]
 
+  # ---- Go modules: examples module ----
   - package-ecosystem: gomod
     directory: /examples
     schedule:
       interval: weekly
+      day: monday
     open-pull-requests-limit: 5
+    labels: ["dependencies", "go", "examples"]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      examples-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      examples-major:
+        patterns: ["*"]
+        update-types: ["major"]
 
+  # ---- GitHub Actions ----
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+      day: monday
+    labels: ["dependencies", "github-actions"]
+    commit-message:
+      prefix: "ci(deps)"
+    groups:
+      actions-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      actions-major:
+        patterns: ["*"]
+        update-types: ["major"]
 
+  # ---- Docker base images ----
   - package-ecosystem: docker
     directory: /docker
     schedule:
       interval: weekly
+      day: monday
+    labels: ["dependencies", "docker"]
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      docker-minor-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      docker-major:
+        patterns: ["*"]
+        update-types: ["major"]
