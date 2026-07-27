@@ -1,0 +1,27 @@
+name: Pinact
+
+# Fails a pull request that references a GitHub Action by a mutable tag instead
+# of an immutable commit SHA (supply-chain hardening).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  pinact:
+    name: Validate pinned actions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Validate actions are pinned
+        uses: suzuki-shunsuke/pinact-action@cf51507d80d4d6522a07348e3d58790290eaf0b6 # v2.0.0
+        with:
+          skip_push: "true"
+          github_token: ${{ secrets.GITHUB_TOKEN }}

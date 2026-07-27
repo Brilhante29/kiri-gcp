@@ -4,6 +4,12 @@
 
 **The cloud, brought down to your machine.**
 
+[![CI](https://img.shields.io/github/actions/workflow/status/Brilhante29/kiri-gcp/ci.yml?branch=main&label=CI&logo=github)](https://github.com/Brilhante29/kiri-gcp/actions)
+[![Go](https://img.shields.io/badge/go-1.25%2B-00ADD8?logo=go&logoColor=white)](https://go.dev)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Brilhante29/kiri-gcp/badge)](https://securityscorecards.dev/viewer/?uri=github.com/Brilhante29/kiri-gcp)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Brilhante29/kiri-gcp)](https://goreportcard.com/report/github.com/Brilhante29/kiri-gcp)
+
 A single binary that emulates **108 Google Cloud services** on one local endpoint.
 Real client compatible, offline, free. Point your Go, Python, Node, or Java SDK at it.
 Point gcloud, Terraform, or plain REST at it. Build, test, and price a whole GCP architecture
