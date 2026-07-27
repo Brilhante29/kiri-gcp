@@ -28,7 +28,11 @@ jobs:
         if: >-
           steps.meta.outputs.update-type == 'version-update:semver-patch' ||
           steps.meta.outputs.update-type == 'version-update:semver-minor'
-        run: gh pr merge --auto --squash "$PR_URL"
+        # `--auto` enables auto-merge while checks are still running; if every
+        # required check has already passed the PR is "clean" and `--auto`
+        # errors, so fall back to a direct squash merge (which only succeeds
+        # when the PR is genuinely mergeable under branch protection).
+        run: gh pr merge --auto --squash "$PR_URL" || gh pr merge --squash "$PR_URL"
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
