@@ -1,16 +1,19 @@
+# Categories for the auto-generated GitHub release notes.
 changelog:
   exclude:
     labels:
       - ignore-for-release
-    authors:
-      - dependabot
+      - "autorelease: pending"
+      - "autorelease: tagged"
   categories:
     - title: Breaking changes
-      labels: [breaking]
+      labels: [breaking, breaking-change]
     - title: New services & features
       labels: [feature, service, enhancement]
     - title: Bug fixes
       labels: [bug, fix]
+    - title: Security
+      labels: [security]
     - title: Documentation
       labels: [docs, documentation]
     - title: Dependencies

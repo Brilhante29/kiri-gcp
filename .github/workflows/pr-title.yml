@@ -1,0 +1,40 @@
+name: PR title
+
+# The repository merges pull requests with squash, so the PR title becomes the
+# commit message on main. release-please derives the next version and the
+# changelog from those messages, so the title must be a Conventional Commit.
+on:
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Conventional Commit title
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - uses: amannn/action-semantic-pull-request@48f256284bd46cdaab1048c3721360e808335d50 # v6.1.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            perf
+            refactor
+            docs
+            test
+            build
+            ci
+            chore
+            revert
+            deps
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+[^.]$
+          subjectPatternError: |
+            The subject "{subject}" is invalid: start it in lower case and do not
+            end it with a period, e.g. "fix(storage): honor the Range header".

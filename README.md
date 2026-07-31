@@ -5,6 +5,7 @@
 **The cloud, brought down to your machine.**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Brilhante29/kiri-gcp/ci.yml?branch=main&label=CI&logo=github)](https://github.com/Brilhante29/kiri-gcp/actions)
+[![Release](https://img.shields.io/github/v/release/Brilhante29/kiri-gcp?logo=github&label=release&sort=semver)](https://github.com/Brilhante29/kiri-gcp/releases/latest)
 [![Go](https://img.shields.io/badge/go-1.25%2B-00ADD8?logo=go&logoColor=white)](https://go.dev)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Brilhante29/kiri-gcp/badge)](https://securityscorecards.dev/viewer/?uri=github.com/Brilhante29/kiri-gcp)
@@ -29,6 +30,24 @@ without a project, a credential, or a bill.
 - **Integrated Cost Surface:** A pricing catalog plus `/kiri/billing/cost` and `/kiri/billing/seed` endpoints to project monthly GCP bills and price cloud architectures locally, the Cost Explorer analogue.
 - **In-Process Go Testing:** Import `github.com/Brilhante29/kiri-gcp` directly in your Go test suite using `kiri.NewServer()` for lightning-fast, isolated unit/integration tests without external dependencies.
 - **Optional Data Persistence:** Configure `$KIRI_DATA_DIR` to save and restore local emulator states across container restarts.
+
+---
+
+## 📦 Install
+
+Every release ships signed binaries for linux, macOS, and Windows (amd64 and
+arm64), a multi-arch container image, an SBOM, and SLSA build provenance.
+
+```bash
+# Container (recommended)
+docker run -d -p 4443:4443 -p 8085:8085 --name kiri ghcr.io/brilhante29/kiri-gcp:latest
+
+# Go toolchain
+go install github.com/Brilhante29/kiri-gcp/cmd/kiri@latest
+```
+
+Or grab a binary from the [latest release](https://github.com/Brilhante29/kiri-gcp/releases/latest).
+See [RELEASING.md](RELEASING.md) to verify signatures and provenance.
 
 ---
 
