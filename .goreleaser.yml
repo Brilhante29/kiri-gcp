@@ -7,7 +7,8 @@ project_name: kiri
 
 before:
   hooks:
-    - go mod tidy
+    # download, not tidy: a release must never mutate go.mod/go.sum mid-build.
+    - go mod download
 
 builds:
   - id: kiri
