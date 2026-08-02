@@ -82,8 +82,28 @@ GoReleaser can run the whole pipeline without publishing anything:
 docker run --rm -v "$PWD:/w" -w /w goreleaser/goreleaser:latest release --snapshot --clean --skip=sign,publish
 ```
 
+## Why the release PR has no CI checks
+
+release-please opens the PR with `GITHUB_TOKEN`, and GitHub deliberately does not
+trigger workflow runs for events raised by that token (the same rule that stops a
+tag it pushes from starting an `on: push: tags` workflow). So the release PR
+shows no checks and branch protection reports it as blocked. That is expected:
+its contents are generated (version bump + changelog), and CI already ran on the
+same commits on `main`. The maintainer merges it — admins are not blocked by the
+required checks. Wiring a PAT or a GitHub App token into the action would make
+the checks run, at the cost of managing that credential.
+
 ## If a release fails midway
 
-The tag and the GitHub release already exist at that point. Fix the problem on
-`main`, then re-run the failed workflow run from the Actions tab — GoReleaser is
-idempotent and will re-upload the assets for the same tag.
+The tag and the GitHub release exist at that point, but with no assets. If the
+fix belongs to the release configuration itself, the tag has to move, because
+GoReleaser runs from the tagged tree:
+
+1. Land the fix on `main`.
+2. Move the tag onto the fixed commit (nothing was published from the old one):
+   `git tag -f vX.Y.Z <sha> && git push --force origin vX.Y.Z`.
+3. Run the **Release** workflow from the Actions tab with the `tag` input set to
+   `vX.Y.Z`. That skips release-please and re-runs only the publish jobs.
+
+If the failure was transient (a registry hiccup), just re-run the failed job —
+GoReleaser re-uploads the assets for the same tag.
