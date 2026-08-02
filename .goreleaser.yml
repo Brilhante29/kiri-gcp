@@ -98,7 +98,7 @@ release:
     ## Container image
 
     ```bash
-    docker pull ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}
+    docker pull ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}
     ```
 
     ## Verifying the release
@@ -114,7 +114,7 @@ release:
 
 dockers:
   - image_templates:
-      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}-amd64"
+      - "ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}-amd64"
     use: buildx
     goos: linux
     goarch: amd64
@@ -130,7 +130,7 @@ dockers:
       - "--label=org.opencontainers.image.source=https://github.com/{{ .Env.GITHUB_REPOSITORY }}"
 
   - image_templates:
-      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}-arm64"
+      - "ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}-arm64"
     use: buildx
     goos: linux
     goarch: arm64
@@ -146,14 +146,14 @@ dockers:
       - "--label=org.opencontainers.image.source=https://github.com/{{ .Env.GITHUB_REPOSITORY }}"
 
 docker_manifests:
-  - name_template: "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}"
+  - name_template: "ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}"
     image_templates:
-      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}-amd64"
-      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}-arm64"
-  - name_template: "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:latest"
+      - "ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}-amd64"
+      - "ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:latest"
     image_templates:
-      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}-amd64"
-      - "ghcr.io/{{ .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}-arm64"
+      - "ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}-amd64"
+      - "ghcr.io/{{ tolower .Env.GITHUB_REPOSITORY_OWNER }}/kiri-gcp:{{ .Version }}-arm64"
 
 docker_signs:
   - cmd: cosign
