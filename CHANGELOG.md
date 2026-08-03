@@ -4,6 +4,14 @@ All notable changes to kiri are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1](https://github.com/Brilhante29/kiri-gcp/compare/v0.2.0...v0.2.1) (2026-08-03)
+
+
+### Documentation
+
+* **readme:** give both repos one identity and one structure ([e7485b9](https://github.com/Brilhante29/kiri-gcp/commit/e7485b9e5788bb42ac612500df61d46dd5050ab1))
+* **release:** document why the release PR carries no checks and how to re-publish a tag ([d0f9e70](https://github.com/Brilhante29/kiri-gcp/commit/d0f9e702e3300d8f301ab7f6e19e4a23d29ecf12))
+
 ## [0.2.0](https://github.com/Brilhante29/kiri-gcp/compare/v0.1.0...v0.2.0) (2026-08-02)
 
 
