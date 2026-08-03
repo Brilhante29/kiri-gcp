@@ -9,7 +9,7 @@ require (
 	cloud.google.com/go/pubsub v1.51.0
 	cloud.google.com/go/storage v1.64.0
 	github.com/Brilhante29/kiri-gcp v0.0.0
-	google.golang.org/api v0.290.0
+	google.golang.org/api v0.291.0
 )
 
 require (
@@ -57,7 +57,7 @@ require (
 	golang.org/x/time v0.15.0 // indirect
 	google.golang.org/genproto v0.0.0-20260723215102-3fe39f3c1018 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260723215102-3fe39f3c1018 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260723215102-3fe39f3c1018 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260724162435-b2f20204f0df // indirect
 	google.golang.org/grpc v1.82.1 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 )
