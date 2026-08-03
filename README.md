@@ -1,6 +1,6 @@
 <div align="center">
 
-# kiri 霧
+# kiri-gcp 霧
 
 **The cloud, brought down to your machine.**
 
@@ -18,22 +18,44 @@ without a project, a credential, or a bill.
 
 `kiri` (霧) is fog: that same cloud at ground level, running locally on your laptop.
 
+**Part of the kiri family** — [**kiri-aws**](https://github.com/Brilhante29/kiri-aws)
+does the same for AWS, with the same CLI shape, the same `KIRI_*` configuration,
+and the same release guarantees.
+
 </div>
 
 ---
 
-## ⚡ Features & Value Proposition
+## Why kiri
 
-- **108 GCP Services in 1 Binary:** Cloud Storage, Pub/Sub, Firestore, BigQuery, Cloud Run, Secret Manager, IAM, KMS, Spanner, GKE, Cloud SQL, and 97 more.
-- **Zero Credentials Needed:** Runs in zero-auth mode locally. Override endpoints without service accounts, IAM keys, or cloud billing accounts.
-- **Multi-Protocol Support:** Dual REST/JSON (`:4443`) and native gRPC (`:8085`) transports compatible with official Google Cloud SDKs.
-- **Integrated Cost Surface:** A pricing catalog plus `/kiri/billing/cost` and `/kiri/billing/seed` endpoints to project monthly GCP bills and price cloud architectures locally, the Cost Explorer analogue.
-- **In-Process Go Testing:** Import `github.com/Brilhante29/kiri-gcp` directly in your Go test suite using `kiri.NewServer()` for lightning-fast, isolated unit/integration tests without external dependencies.
-- **Optional Data Persistence:** Configure `$KIRI_DATA_DIR` to save and restore local emulator states across container restarts.
+Cloud test environments are slow, shared, and billed. Test suites that touch
+Cloud Storage, Pub/Sub, or Firestore end up mocked into meaninglessness, or they
+run against a real project and become flaky and expensive. `kiri-gcp` gives you
+the real client protocol on `localhost`: your SDK calls are unchanged, the wire
+format is the real one, and the whole surface starts in a container in under a
+second.
+
+It also answers a question mocks cannot: **what will this architecture cost?**
+A pricing catalog and a cost query let you price a design locally, before any of
+it exists.
+
+- **108 Google Cloud services in one binary** — Cloud Storage, Pub/Sub,
+  Firestore, BigQuery, Cloud Run, Secret Manager, IAM, KMS, Spanner, GKE,
+  Cloud SQL, and 97 more.
+- **No credentials, no project.** Runs in zero-auth mode; nothing leaves the machine.
+- **Works with the tools you already use** — Google Cloud SDKs (Go, Python, Node,
+  Java), `gcloud`, and Terraform, by overriding one endpoint.
+- **Two transports** — REST/JSON on `:4443` and native gRPC on `:8085` for
+  Pub/Sub and Firestore streaming.
+- **Cost surface** — a pricing catalog plus `/kiri/billing/seed` and
+  `/kiri/billing/cost` to project a monthly bill.
+- **In-process Go testing** — `kiri.NewServer()` runs the emulator inside your
+  test binary.
+- **Optional persistence** — set `KIRI_DATA_DIR` and state survives restarts.
 
 ---
 
-## 📦 Install
+## Install
 
 Every release ships signed binaries for linux, macOS, and Windows (amd64 and
 arm64), a multi-arch container image, an SBOM, and SLSA build provenance.
@@ -51,16 +73,15 @@ See [RELEASING.md](RELEASING.md) to verify signatures and provenance.
 
 ---
 
-## 🚀 Quickstart
+## Quickstart
 
-### Option A: Run via Docker (Recommended)
-
-Build the image from source and run it:
+### Option A: Run the published image (recommended)
 
 ```bash
-docker build -t kiri -f docker/Dockerfile .
-docker run -d -p 4443:4443 -p 8085:8085 --name kiri kiri
+docker run -d -p 4443:4443 -p 8085:8085 --name kiri ghcr.io/brilhante29/kiri-gcp:latest
 ```
+
+To build from a checkout instead: `docker build -t kiri -f docker/Dockerfile .`
 
 Verify that the emulator is running:
 
@@ -71,59 +92,45 @@ curl http://localhost:4443/
 
 ### Option B: Docker Compose
 
-```yaml
-services:
-  kiri:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-    ports:
-      - "4443:4443"
-      - "8085:8085"
-    environment:
-      KIRI_HOST: "0.0.0.0"
-      KIRI_HTTP_PORT: "4443"
-      KIRI_GRPC_PORT: "8085"
-      KIRI_LOG_LEVEL: "info"
-      KIRI_DATA_DIR: "/data"
-    volumes:
-      - kiri-data:/data
+A [`docker-compose.yml`](docker-compose.yml) ships with the repository:
 
-volumes:
-  kiri-data:
+```bash
+docker compose up -d
 ```
 
-### Option C: Go Module (In-Process Testing)
+### Option C: Go module (in-process testing)
+
+Import the module and run the emulator inside your test binary — no container, no
+port juggling, and it shuts down with the test:
 
 ```go
-package main
-
 import (
-    "context"
-    "fmt"
     "cloud.google.com/go/storage"
-    "github.com/Brilhante29/kiri-gcp"
+    kiri "github.com/Brilhante29/kiri-gcp"
     "google.golang.org/api/option"
 )
 
-func main() {
-    // Start an in-process kiri emulator on random ports
-    srv := kiri.NewServer()
+func TestUploadsReport(t *testing.T) {
+    srv := kiri.NewServer() // random port on localhost
     defer srv.Close()
 
-    // Point any Go GCP client to the emulator
-    client, _ := storage.NewClient(context.Background(),
+    client, err := storage.NewClient(t.Context(),
         option.WithEndpoint(srv.URL),
         option.WithoutAuthentication(),
     )
-    
-    fmt.Println("Connected to local kiri server at:", srv.URL)
+    // ... exercise the code under test against client
 }
+```
+
+Or run it straight from a checkout:
+
+```bash
+go run ./cmd/kiri --http-port 4443
 ```
 
 ---
 
-## 💻 Language & Tooling Setup
+## Language & tooling setup
 
 ### Go SDK
 ```go
@@ -183,7 +190,7 @@ gcloud config set api_endpoint_overrides/storage http://localhost:4443/
 
 ---
 
-## 💰 Cost surface (Cost Explorer analogue)
+## Cost surface (Cost Explorer analogue)
 
 `kiri` carries a pricing catalog (Compute, Storage, BigQuery SKUs) and a cost
 query so you can project what a GCP architecture would cost, locally. Seed cost
@@ -227,20 +234,23 @@ SDKs and projects their monthly cost, see
 
 ---
 
-## 📁 Examples Directory (`examples/`)
+## Supported services
 
-Explore complete code samples and architecture blueprints in the [`examples/`](./examples) directory:
+108 services are registered and reachable on the same endpoints. The running
+emulator reports the live count:
 
-- **[`examples/go/`](./examples/go):** Go SDK connection, bucket creation, object upload, Pub/Sub topic handling.
-- **[`examples/python/`](./examples/python):** Python SDK integration with Storage and Pub/Sub emulators.
-- **[`examples/nodejs/`](./examples/nodejs):** Node.js `@google-cloud` SDK usage.
-- **[`examples/terraform/`](./examples/terraform):** Terraform HCL manifest directing resources to `kiri`.
-- **[`examples/testing/`](./examples/testing):** In-process Go integration test suite using `kiri.NewServer()`.
-- **[`examples/architectures/`](./examples/architectures):** Architectural blueprints for Serverless APIs, Data Lakes, and Microservices with monthly cost simulations.
+```bash
+curl -s http://localhost:4443/
+# {"emulator":"kiri","status":"ok","services":108,"grpc_port":8085}
+```
+
+The canonical list is [`internal/registry/registry.go`](internal/registry/registry.go):
+every service registers itself there through an `init()` hook, so the registry and
+the binary can never disagree.
 
 ---
 
-## ⚙️ Environment Variables
+## Configuration
 
 | Variable | Default | Description |
 |---|---|---|
@@ -253,31 +263,74 @@ Explore complete code samples and architecture blueprints in the [`examples/`](.
 
 ---
 
-## 🏛️ Architecture Overview
+## Architecture
 
 ```
-                        ┌──────────────────────────────────────────────┐
-                        │                 kiri Server                  │
-                        ├──────────────────────┬───────────────────────┤
-                        │   REST Mux (:4443)   │   gRPC Server (:8085) │
-                        └──────────┬───────────┴───────────┬───────────┘
-                                   │                       │
-                                   ▼                       ▼
-                        ┌──────────────────────────────────────────────┐
-                        │          Unified Service Registry            │
-                        │               (108 Services)                 │
-                        └──────────────────────┬───────────────────────┘
-                                               │
-                                               ▼
-                        ┌──────────────────────────────────────────────┐
-                        │      Atomic Storage Persistence ($KIRI_DATA_DIR) │
-                        └──────────────────────────────────────────────┘
+                 ┌──────────────────────────────────────────────┐
+                 │                 kiri Server                  │
+                 ├──────────────────────┬───────────────────────┤
+                 │   REST Mux (:4443)   │  gRPC Server (:8085)  │
+                 └──────────┬───────────┴───────────┬───────────┘
+                            │                       │
+                            ▼                       ▼
+                 ┌──────────────────────────────────────────────┐
+                 │           Unified Service Registry           │
+                 │                (108 Services)                │
+                 └──────────────────────┬───────────────────────┘
+                                        │
+                        ┌───────────────┴───────────────┐
+                        ▼                               ▼
+            ┌───────────────────────┐      ┌────────────────────────┐
+            │  Pricing catalog +    │      │  Storage + persistence │
+            │  cost query           │      │  ($KIRI_DATA_DIR)      │
+            └───────────────────────┘      └────────────────────────┘
 ```
 
-`kiri` runs a single Go process housing an `http.ServeMux` for REST/JSON traffic and a gRPC server for Pub/Sub and Firestore streaming operations. All services register via Go `init()` hooks and share unified memory states.
+One Go process fronts every service: an `http.ServeMux` serves REST/JSON traffic
+and a gRPC server handles Pub/Sub and Firestore streaming. Services register
+themselves through `init()` hooks and share the same in-memory state, which is
+snapshotted to disk when `KIRI_DATA_DIR` is set.
 
 ---
 
-## 📄 License
+## Examples
 
-[MIT](LICENSE)
+Runnable samples live in [`examples/`](./examples):
+
+- **[`examples/go/`](./examples/go)** — Go SDK connection, bucket creation, object upload, Pub/Sub topics.
+- **[`examples/python/`](./examples/python)** — Python SDK against the Storage and Pub/Sub emulators.
+- **[`examples/nodejs/`](./examples/nodejs)** — Node.js `@google-cloud` SDK usage.
+- **[`examples/terraform/`](./examples/terraform)** — Terraform manifest pointed at `kiri`.
+- **[`examples/testing/`](./examples/testing)** — in-process Go test suite using `kiri.NewServer()`.
+- **[`examples/scenario/`](./examples/scenario)** — end-to-end run that provisions resources and prices them.
+- **[`examples/architectures/`](./examples/architectures)** — blueprints for serverless APIs, data lakes, and microservices with monthly cost simulations.
+
+---
+
+## Releases and supply chain
+
+Releases are automated end to end — see [RELEASING.md](RELEASING.md). Every tag
+publishes signed binaries (linux, macOS, Windows on amd64/arm64), checksums
+signed keylessly with [cosign](https://sigstore.dev), an SBOM per archive, SLSA
+build provenance, and a multi-arch image on `ghcr.io`.
+
+```bash
+cosign verify ghcr.io/brilhante29/kiri-gcp:latest \
+  --certificate-identity-regexp '^https://github.com/Brilhante29/kiri-gcp/' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+```
+
+---
+
+## Contributing
+
+Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md)
+first: it covers the layout, how to add a service, and the local checks. Pull
+request titles follow [Conventional Commits](https://www.conventionalcommits.org)
+because the release automation derives the next version from them.
+
+---
+
+## License
+
+[MIT](LICENSE) © 2026 Guilherme Brilhante and the kiri-gcp contributors.
