@@ -6,8 +6,8 @@ module github.com/Brilhante29/kiri-gcp/examples
 go 1.25.8
 
 require (
-	cloud.google.com/go/pubsub v1.51.0
-	cloud.google.com/go/storage v1.64.0
+	cloud.google.com/go/pubsub v1.51.1
+	cloud.google.com/go/storage v1.65.0
 	github.com/Brilhante29/kiri-gcp v0.0.0
 	google.golang.org/api v0.293.0
 )
