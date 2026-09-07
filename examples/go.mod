@@ -3,13 +3,13 @@
 // examples pull those SDKs to prove kiri is a drop-in target.
 module github.com/Brilhante29/kiri-gcp/examples
 
-go 1.25.8
+go 1.26.0
 
 require (
 	cloud.google.com/go/pubsub v1.51.1
-	cloud.google.com/go/storage v1.66.0
+	cloud.google.com/go/storage v1.67.0
 	github.com/Brilhante29/kiri-gcp v0.0.0-00010101000000-000000000000
-	google.golang.org/api v0.295.0
+	google.golang.org/api v0.297.0
 )
 
 require (
