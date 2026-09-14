@@ -7,7 +7,7 @@ go 1.26.0
 
 require (
 	cloud.google.com/go/pubsub v1.51.1
-	cloud.google.com/go/storage v1.67.0
+	cloud.google.com/go/storage v1.67.1
 	github.com/Brilhante29/kiri-gcp v0.0.0-00010101000000-000000000000
 	google.golang.org/api v0.297.0
 )
