@@ -3,7 +3,7 @@ module github.com/Brilhante29/kiri-gcp
 go 1.25.0
 
 require (
-	google.golang.org/grpc v1.83.2
+	google.golang.org/grpc v1.84.0
 	google.golang.org/protobuf v1.36.12
 )
 
