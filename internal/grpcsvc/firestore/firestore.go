@@ -1,7 +1,9 @@
-// Package firestoregrpc implements the gRPC Firestore service
-// (google.firestore.v1.Firestore) for the kiri emulator. It wraps the
-// REST Firestore service logic so clients using FIRESTORE_EMULATOR_HOST
-// get drop-in compatibility.
+// Package firestoregrpc implements part of the gRPC Firestore service
+// (google.firestore.v1.Firestore) for the kiri emulator by wrapping the REST
+// Firestore service logic. Only GetDocument, ListDocuments, CreateDocument, and
+// DeleteDocument exist; the official clients write through Commit and read
+// through BatchGetDocuments and RunQuery, which answer UNIMPLEMENTED until
+// they are added.
 package firestoregrpc
 
 import (

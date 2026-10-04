@@ -15,12 +15,13 @@ import (
 func main() {
 	ctx := context.Background()
 	kiriHTTP := "http://localhost:4443"
+	gcsEndpoint := kiriHTTP + "/storage/v1/" // the Go client needs the JSON API base path
 
 	fmt.Println("=== kiri Go SDK Integration Example ===")
 
 	// 1. Initialize Cloud Storage client pointing to local kiri emulator
 	client, err := storage.NewClient(ctx,
-		option.WithEndpoint(kiriHTTP),
+		option.WithEndpoint(gcsEndpoint),
 		option.WithoutAuthentication(),
 	)
 	if err != nil {
