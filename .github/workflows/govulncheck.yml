@@ -6,6 +6,9 @@ on:
   workflow_dispatch: {}
   push:
     branches: [main]
+  # Scan every pull request too, so a dependency bump that introduces a known
+  # vulnerability fails before merge instead of on main.
+  pull_request:
 
 permissions:
   contents: read
