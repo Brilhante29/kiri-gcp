@@ -39,9 +39,9 @@ def main():
     response = requests.post(
         "http://localhost:4443/kiri/billing/calculator",
         json={
-            "resources": [
-                {"service": "cloudrun", "requestsPerMonth": 1000000, "cpu": 1.0, "memoryGb": 1.0},
-                {"service": "firestore", "readsPerDay": 50000, "writesPerDay": 20000, "storageGb": 10.0}
+            "items": [
+                {"service": "cloudrun", "requestsCount": 1000000, "vcpus": 1.0, "memoryGiB": 1.0},
+                {"service": "gcs", "storageGiB": 10.0, "storageClass": "standard"}
             ]
         }
     )
