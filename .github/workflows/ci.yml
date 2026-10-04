@@ -18,13 +18,22 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: stable # latest patched Go, so the toolchain has current stdlib security fixes
-          cache-dependency-path: go.sum
+          cache-dependency-path: |
+            go.sum
+            examples/go.sum
       - name: Vet
         run: go vet ./...
       - name: Test
         run: go test -race ./...
       - name: Build
         run: go build ./...
+      - name: Official client checks
+        # The examples module pulls the real Google Cloud SDKs, so this proves
+        # the drop-in claim instead of only the emulator's own HTTP tests.
+        working-directory: examples
+        run: |
+          go vet ./...
+          go test ./...
 
   docker:
     name: Docker image

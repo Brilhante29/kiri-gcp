@@ -12,7 +12,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/Brilhante29/kiri-gcp)](https://goreportcard.com/report/github.com/Brilhante29/kiri-gcp)
 
 A single binary that emulates **108 Google Cloud services** on one local endpoint.
-Real client compatible, offline, free. Point your Go, Python, Node, or Java SDK at it.
+Real wire protocols, offline, free. Point your Go, Python, Node, or Java SDK at it.
 Point gcloud, Terraform, or plain REST at it. Build, test, and price a whole GCP architecture
 without a project, a credential, or a bill.
 
@@ -45,8 +45,10 @@ it exists.
 - **No credentials, no project.** Runs in zero-auth mode; nothing leaves the machine.
 - **Works with the tools you already use** — Google Cloud SDKs (Go, Python, Node,
   Java), `gcloud`, and Terraform, by overriding one endpoint.
-- **Two transports** — REST/JSON on `:4443` and native gRPC on `:8085` for
-  Pub/Sub and Firestore streaming.
+- **Two transports** — REST/JSON on `:4443`, and native gRPC on `:8085` for
+  Pub/Sub (including streaming pull) and a subset of Firestore.
+- **Honest depth** — [Fidelity](#fidelity) states which services are verified
+  with official clients and which stop at the control plane.
 - **Cost surface** — a pricing catalog plus `/kiri/billing/seed` and
   `/kiri/billing/cost` to project a monthly bill.
 - **In-process Go testing** — `kiri.NewServer()` runs the emulator inside your
@@ -115,7 +117,7 @@ func TestUploadsReport(t *testing.T) {
     defer srv.Close()
 
     client, err := storage.NewClient(t.Context(),
-        option.WithEndpoint(srv.URL),
+        option.WithEndpoint(srv.URL+"/storage/v1/"),
         option.WithoutAuthentication(),
     )
     // ... exercise the code under test against client
@@ -140,10 +142,13 @@ import (
 )
 
 client, err := storage.NewClient(ctx,
-    option.WithEndpoint("http://localhost:4443"),
+    option.WithEndpoint("http://localhost:4443/storage/v1/"),
     option.WithoutAuthentication(),
 )
 ```
+
+Keep the `/storage/v1/` base path: with a bare host, the Go client sends JSON API
+calls to the wrong paths and the emulator answers `405`.
 
 ### Python SDK
 ```bash
@@ -248,6 +253,35 @@ The canonical list is [`internal/registry/registry.go`](internal/registry/regist
 every service registers itself there through an `init()` hook, so the registry and
 the binary can never disagree.
 
+### Fidelity
+
+Registered is not the same as equivalent. What the code and the tests show today:
+
+- **Verified with official clients.** Cloud Storage passes the Go, Python, and
+  Node.js clients end to end: bucket and object CRUD, multipart and resumable
+  uploads (single request and chunked), downloads, and MD5 and CRC32C checksums.
+  Pub/Sub over gRPC passes the Python client for topics, subscriptions, publish,
+  pull, streaming pull, and acknowledge. CI runs the Go client checks in
+  [`examples/testing`](examples/testing).
+- **Stateful REST behavior, covered by HTTP tests.** Firestore documents
+  (including transactions), Secret Manager, KMS, IAM, Resource Manager, Cloud
+  Tasks, Cloud Scheduler, Logging, Monitoring, BigQuery datasets and tables, and
+  the billing and cost surface.
+- **Typed control plane.** 55 of the 108 services, including all of the above,
+  keep service-specific resource models. Beyond the services above they stop at
+  lifecycles, such as Cloud SQL instances with start and stop, GKE clusters with
+  node pools, and Cloud Run services with revisions. Nothing executes: no SQL
+  runs, no container starts, no pod is scheduled.
+- **Generic resource store.** The other 53 services share create, get, list, and
+  delete on their REST paths: enough to wire clients and Terraform against, not
+  to test service behavior.
+
+Known gaps: BigQuery `jobs.query` returns a fixed placeholder row instead of
+running SQL, and the Firestore gRPC server implements only get, list, create, and
+delete document, so the official Firestore clients, which write through `Commit`,
+cannot write over gRPC yet. Open an issue when a test needs deeper behavior from
+a service.
+
 ---
 
 ## Configuration
@@ -328,6 +362,13 @@ Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md)
 first: it covers the layout, how to add a service, and the local checks. Pull
 request titles follow [Conventional Commits](https://www.conventionalcommits.org)
 because the release automation derives the next version from them.
+
+---
+
+## Author
+
+Maintained by **Guilherme Brilhante**, software engineer working on scalable backends and production AI.
+[LinkedIn](https://www.linkedin.com/in/guilhermefreirebrilhanteseveriano/) · [GitHub](https://github.com/Brilhante29) · [Publications](https://dblp.org/pid/353/6812.html)
 
 ---
 

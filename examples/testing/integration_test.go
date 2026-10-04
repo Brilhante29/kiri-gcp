@@ -27,7 +27,7 @@ func TestInProcessKiriServer(t *testing.T) {
 
 	// 2. Connect official Google Cloud Go SDK
 	client, err := storage.NewClient(ctx,
-		option.WithEndpoint(srv.URL),
+		option.WithEndpoint(srv.URL+"/storage/v1/"),
 		option.WithoutAuthentication(),
 	)
 	if err != nil {
@@ -70,6 +70,33 @@ func TestInProcessKiriServer(t *testing.T) {
 		t.Errorf("expected content %q, got %q", string(content), string(readData))
 	}
 	t.Log("✓ Successfully validated GCS bucket write/read against in-process kiri server")
+
+	// A small ChunkSize makes the client use a chunked resumable upload,
+	// the path it takes for large objects.
+	large := bytes.Repeat([]byte("kiri-resumable-"), 70_000) // ~1 MiB
+	chunked := bucket.Object("large/payload.bin").NewWriter(ctx)
+	chunked.ChunkSize = 256 * 1024
+	if _, err := chunked.Write(large); err != nil {
+		t.Fatalf("failed to write large payload: %v", err)
+	}
+	if err := chunked.Close(); err != nil {
+		t.Fatalf("failed to finish resumable upload: %v", err)
+	}
+
+	largeReader, err := bucket.Object("large/payload.bin").NewReader(ctx)
+	if err != nil {
+		t.Fatalf("failed to open large payload: %v", err)
+	}
+	defer largeReader.Close()
+
+	largeData, err := io.ReadAll(largeReader)
+	if err != nil {
+		t.Fatalf("failed to read large payload: %v", err)
+	}
+	if !bytes.Equal(largeData, large) {
+		t.Errorf("large payload mismatch: wrote %d bytes, read %d", len(large), len(largeData))
+	}
+	t.Log("✓ Validated a chunked resumable upload with the official client")
 
 	// 4. Test the Cost surface (Cost Explorer analogue).
 	costBody := []byte(`{"groupBy":"service"}`)
