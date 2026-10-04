@@ -16,6 +16,12 @@ updates:
     commit-message:
       prefix: "chore(deps)"
       prefix-development: "chore(deps-dev)"
+    ignore:
+      # GO-2026-6443 (CVE-2026-84445): grpc 1.84.x is affected and only the
+      # 1.85 line carries the fix, while 1.83.2 is patched. Remove this once
+      # grpc 1.85.0 is released.
+      - dependency-name: "google.golang.org/grpc"
+        versions: [">= 1.84.0, < 1.85.0"]
     groups:
       go-minor-patch:
         patterns: ["*"]

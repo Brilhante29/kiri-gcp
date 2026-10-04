@@ -1,10 +1,10 @@
 name: Dependabot auto-merge
 
 # Auto-enable auto-merge for low-risk Dependabot updates.
-# Security is enforced by branch protection: the merge only happens once every
-# required status check (test & build, golangci-lint, CodeQL, dependency review,
-# govulncheck, scorecard, docker) is green. Major-version bumps are never
-# auto-merged and always wait for a human.
+# Branch protection decides which status checks gate the merge: auto-merge only
+# waits for checks marked as required there. govulncheck runs on pull requests,
+# and it must be a required check to stop a vulnerable bump from auto-merging.
+# Major-version bumps are never auto-merged and always wait for a human.
 on: pull_request
 
 permissions:
