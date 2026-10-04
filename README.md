@@ -331,6 +331,13 @@ because the release automation derives the next version from them.
 
 ---
 
+## Author
+
+Maintained by **Guilherme Brilhante**, software engineer working on scalable backends and production AI.
+[LinkedIn](https://www.linkedin.com/in/guilhermefreirebrilhanteseveriano/) · [GitHub](https://github.com/Brilhante29)
+
+---
+
 ## License
 
 [MIT](LICENSE) © 2026 Guilherme Brilhante and the kiri-gcp contributors.
