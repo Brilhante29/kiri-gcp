@@ -17,9 +17,12 @@ updates:
       prefix: "chore(deps)"
       prefix-development: "chore(deps-dev)"
     ignore:
-      # GO-2026-6443 (CVE-2026-84445): grpc 1.84.x is affected and only the
-      # 1.85 line carries the fix, while 1.83.2 is patched. Remove this once
-      # grpc 1.85.0 is released.
+      # The Go vulnerability database entry GO-2026-6443 (CVE-2026-84445)
+      # covers every grpc 1.84.x release, so govulncheck fails on 1.84.0 even
+      # though that release already carries the fix (GitHub's reviewed advisory
+      # GHSA-2v4p-qf9q-27wj lists it as patched). 1.83.2 is patched in both
+      # databases. Remove this once the database range is corrected or grpc
+      # 1.85.0 is released.
       - dependency-name: "google.golang.org/grpc"
         versions: [">= 1.84.0, < 1.85.0"]
     groups:
@@ -40,6 +43,14 @@ updates:
     labels: ["dependencies", "go", "examples"]
     commit-message:
       prefix: "chore(deps)"
+    ignore:
+      # The examples boot the emulator in-process, so they hold grpc at 1.83.2
+      # like the main module. google.golang.org/api v0.299.0 and v0.300.0
+      # require grpc 1.84.0. Remove both entries with the main module's.
+      - dependency-name: "google.golang.org/grpc"
+        versions: [">= 1.84.0, < 1.85.0"]
+      - dependency-name: "google.golang.org/api"
+        versions: [">= 0.299.0"]
     groups:
       examples-minor-patch:
         patterns: ["*"]
