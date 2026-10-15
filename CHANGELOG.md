@@ -4,6 +4,20 @@ All notable changes to kiri are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project aims to
 follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1](https://github.com/Brilhante29/kiri-gcp/compare/v0.2.0...v0.2.1) (2026-10-04)
+
+
+### Bug fixes
+
+* **deps:** restore grpc 1.83.2 and scan pull requests with govulncheck ([#38](https://github.com/Brilhante29/kiri-gcp/issues/38)) ([407dbe4](https://github.com/Brilhante29/kiri-gcp/commit/407dbe4eaa26366f93cabc230bffa8687f5dbc93))
+* **gcs:** make Cloud Storage work with the official Python and Node.js clients ([#37](https://github.com/Brilhante29/kiri-gcp/issues/37)) ([aa9942d](https://github.com/Brilhante29/kiri-gcp/commit/aa9942df760ac27427fcee4ca75895b6dfba05bf))
+
+
+### Documentation
+
+* **readme:** give both repos one identity and one structure ([e7485b9](https://github.com/Brilhante29/kiri-gcp/commit/e7485b9e5788bb42ac612500df61d46dd5050ab1))
+* **release:** document why the release PR carries no checks and how to re-publish a tag ([d0f9e70](https://github.com/Brilhante29/kiri-gcp/commit/d0f9e702e3300d8f301ab7f6e19e4a23d29ecf12))
+
 ## [0.2.0](https://github.com/Brilhante29/kiri-gcp/compare/v0.1.0...v0.2.0) (2026-08-02)
 
 
